@@ -5,15 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>达人电商数据看板</title>
   <style>
-    @font-face{
-      font-family:'TencentSans';
-      src:local('TencentSans'), local('腾讯体'), url('fonts/TencentSans.woff2') format('woff2');
-      font-weight:400 700; font-display:swap;
-    }
     :root{
       --bg:#f4f5f9; --card:#fff; --ink:#1f2937; --muted:#6b7280; --light:#9ca3af;
       --border:#e8eaf0; --primary:#667eea; --primary-d:#764ba2;
-      --font:'TencentSans','PingFang SC','Microsoft YaHei','Hiragino Sans GB',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+      --font:'PingFang SC','Hiragino Sans GB','Microsoft YaHei',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
     }
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
     body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
@@ -43,7 +38,7 @@
     .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:20px;background:#eef2ff;color:#4f46e5;font-weight:600;}
     .badge.mock{background:#f1f5f9;color:#64748b;}
     .filter-grid{display:grid;grid-template-columns:1fr;gap:16px;}
-    @media(min-width:768px){.filter-grid{grid-template-columns:repeat(3,1fr);}}
+    @media(min-width:768px){.filter-grid{grid-template-columns:repeat(2,1fr);}}
     .field-label{font-size:12px;color:var(--light);margin-bottom:6px;display:block;}
     .select{width:100%;background:#fff;border:1px solid var(--border);border-radius:12px;padding:11px 38px 11px 14px;font-size:14px;font-weight:500;color:#374151;outline:none;
       appearance:none;-webkit-appearance:none;cursor:pointer;
@@ -69,6 +64,9 @@
     .date-cal{width:16px;height:16px;flex-shrink:0;color:#667eea;}
     .date-placeholder{color:#9ca3af;}
     .date-sep{color:#9ca3af;font-weight:600;}
+    .date-summary{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:11px 14px;font-size:13px;font-weight:600;color:#374151;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.03);transition:.2s;user-select:none;flex:1;}
+    .date-summary:hover{border-color:#c7cdf5;}
+    .date-summary .date-edit{margin-left:auto;font-size:12px;font-weight:500;color:#667eea;border:1px solid #c7cdf5;border-radius:14px;padding:2px 10px;}
     .date-pop{position:absolute;top:calc(100% + 8px);left:0;z-index:60;width:264px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:0 16px 40px rgba(31,41,55,.16);}
     .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
     .cal-title{font-size:14px;font-weight:700;color:#1f2937;}
@@ -89,23 +87,23 @@
     .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px;}
     @media(min-width:640px){.kpi-grid{grid-template-columns:repeat(3,1fr);}}
     @media(min-width:1024px){.kpi-grid{grid-template-columns:repeat(4,1fr);}}
-    .kpi-card{border-radius:18px;padding:16px 18px;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.08);display:flex;flex-direction:column;gap:8px;min-height:104px;}
+    .kpi-card{border-radius:16px;padding:14px 16px;border:1px solid var(--border);border-left:4px solid var(--accent,#667eea);background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.05);display:flex;flex-direction:column;gap:6px;min-height:88px;}
     .kpi-gmv{grid-column:span 2;}
-    .kpi-label{font-size:13px;opacity:.92;display:flex;align-items:center;gap:6px;}
-    .kpi-value{font-size:25px;font-weight:800;line-height:1.1;word-break:break-all;}
-    .kpi-gmv .kpi-value{font-size:32px;}
-    .kpi-foot{font-size:12px;opacity:.95;display:flex;align-items:center;gap:8px;}
-    .kpi-delta{background:rgba(255,255,255,.88);border-radius:20px;padding:2px 8px;font-weight:700;font-size:12px;}
-    .kpi-up{color:#059669;}
-    .kpi-down{color:#dc2626;}
-    /* KPI 渐变 */
-    .grad-gmv{background:linear-gradient(135deg,#43e97b,#38f9d7);}
-    .grad-blue{background:linear-gradient(135deg,#667eea,#764ba2);}
-    .grad-orange{background:linear-gradient(135deg,#f093fb,#f5576c);}
-    .grad-purple{background:linear-gradient(135deg,#a18cd1,#fbc2eb);}
-    .grad-teal{background:linear-gradient(135deg,#4facfe,#00f2fe);}
-    .grad-amber{background:linear-gradient(135deg,#fa709a,#fee140);}
-    .grad-indigo{background:linear-gradient(135deg,#5b6ef5,#9b5bef);}
+    .kpi-label{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:6px;}
+    .kpi-value{font-size:24px;font-weight:800;line-height:1.1;color:var(--ink);word-break:break-all;}
+    .kpi-gmv .kpi-value{font-size:28px;}
+    .kpi-foot{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:8px;}
+    .kpi-delta{border-radius:20px;padding:2px 8px;font-weight:700;font-size:12px;}
+    .kpi-up{color:#059669;background:rgba(5,150,105,.1);}
+    .kpi-down{color:#dc2626;background:rgba(220,38,38,.1);}
+    /* KPI 强调色（低饱和，仅用于左侧彩条） */
+    .grad-gmv{--accent:#10b981;}
+    .grad-blue{--accent:#6366f1;}
+    .grad-orange{--accent:#f59e0b;}
+    .grad-purple{--accent:#8b5cf6;}
+    .grad-teal{--accent:#14b8a6;}
+    .grad-amber{--accent:#ec4899;}
+    .grad-indigo{--accent:#3b82f6;}
 
     /* 面板 */
     .panel{background:#fff;border-radius:18px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:20px;}
@@ -194,6 +192,50 @@
     .loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:300;}
     .spinner{width:40px;height:40px;border:4px solid #e5e7eb;border-top-color:#667eea;border-radius:50%;animation:spin 1s linear infinite;}
     @keyframes spin{to{transform:rotate(360deg);}}
+
+    /* ============ 移动端适配 ============ */
+    @media (max-width:640px){
+      body{font-size:16px;}
+      .container{padding:0 12px;}
+      .header-inner{flex-direction:column;align-items:stretch;gap:10px;padding:12px 0;}
+      .brand{justify-content:flex-start;}
+      .brand-title{font-size:17px;}
+      .brand-sub{font-size:11px;}
+      .team-switch{justify-content:space-between;width:100%;}
+      .team-chip{flex:1;justify-content:center;}
+      .import-btn{width:100%;}
+      .filter-bar{padding:14px;margin:14px 0;border-radius:14px;}
+      .filter-grid{grid-template-columns:1fr;gap:12px;}
+      .filter-title{font-size:14px;}
+      .select{padding:13px 38px 13px 14px;font-size:15px;}
+      .chip{padding:8px 14px;font-size:14px;}
+      .kpi-grid{gap:10px;margin-bottom:14px;}
+      .kpi-card{min-height:82px;padding:12px 14px;border-radius:14px;}
+      .kpi-value{font-size:23px;}
+      .kpi-gmv .kpi-value{font-size:27px;}
+      .kpi-label{font-size:12px;}
+      .panel{padding:14px;margin-bottom:14px;border-radius:14px;}
+      .panel-title{font-size:15px;margin-bottom:12px;}
+      .donut-wrap{height:200px;}
+      .line-wrap{height:260px;}
+      .list-item{padding:9px 10px;gap:10px;}
+      .item-name{font-size:13px;}
+      .item-amt .v{font-size:13px;}
+      .item-thumb{width:38px;height:38px;}
+      .acc-card{padding:13px;}
+      .acc-stats{gap:8px;}
+      .stat{padding:7px 4px;}
+      .stat-val{font-size:13px;}
+      .footer{font-size:11px;padding:16px 0;}
+      .modal{max-width:100%;border-radius:14px;max-height:92vh;}
+      .modal-body{padding:16px;}
+      .toast{font-size:13px;bottom:16px;}
+    }
+    @media (max-width:380px){
+      .kpi-value{font-size:21px;}
+      .kpi-gmv .kpi-value{font-size:24px;}
+      .select{padding:12px 36px 12px 13px;font-size:14px;}
+    }
   </style>
 </head>
 <body>
@@ -254,36 +296,36 @@
             <button class="chip" :class="{'chip-active':timeMode==='custom'}" @click="selectTimeRange('custom')">自定义</button>
           </div>
           <div class="date-row" v-if="timeMode==='custom'">
-            <div class="date-wrap" :class="{'date-wrap-open':openPicker==='start'}">
-              <div class="date-field" :class="{'date-field-active':openPicker==='start'}" @click="openPickerFor('start')">
-                <svg class="date-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                <span :class="{'date-placeholder':!customStart}">{{ customStart || '开始日期' }}</span>
-              </div>
-              <div class="date-pop" v-if="openPicker==='start'" @click.stop>
-                <div class="cal-head"><button class="cal-nav" @click="movePicker(-1)">‹</button><span class="cal-title">{{ pickerView.year }} 年 {{ pickerView.month+1 }} 月</span><button class="cal-nav" @click="movePicker(1)">›</button></div>
-                <div class="cal-grid cal-week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
-                <div class="cal-grid"><span v-for="c in pickerDays" :key="c.dateStr" class="cal-cell" :class="{'cal-other':c.other,'cal-today':c.isToday,'cal-sel':isSel('start',c.dateStr)}" @click="selectDate('start',c.dateStr)">{{ c.d }}</span></div>
-              </div>
+            <div class="date-summary" v-if="customStart && customEnd" @click="openPickerFor('start')">
+              <svg class="date-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+              <span>{{ customStart }} ~ {{ customEnd }}</span>
+              <span class="date-edit">修改</span>
             </div>
-            <span class="date-sep">~</span>
-            <div class="date-wrap" :class="{'date-wrap-open':openPicker==='end'}">
-              <div class="date-field" :class="{'date-field-active':openPicker==='end'}" @click="openPickerFor('end')">
-                <svg class="date-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
-                <span :class="{'date-placeholder':!customEnd}">{{ customEnd || '结束日期' }}</span>
+            <template v-else>
+              <div class="date-wrap" :class="{'date-wrap-open':openPicker==='start'}">
+                <div class="date-field" :class="{'date-field-active':openPicker==='start'}" @click="openPickerFor('start')">
+                  <svg class="date-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                  <span :class="{'date-placeholder':!customStart}">{{ customStart || '开始日期' }}</span>
+                </div>
+                <div class="date-pop" v-if="openPicker==='start'" @click.stop>
+                  <div class="cal-head"><button class="cal-nav" @click="movePicker(-1)">‹</button><span class="cal-title">{{ pickerView.year }} 年 {{ pickerView.month+1 }} 月</span><button class="cal-nav" @click="movePicker(1)">›</button></div>
+                  <div class="cal-grid cal-week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+                  <div class="cal-grid"><span v-for="c in pickerDays" :key="c.dateStr" class="cal-cell" :class="{'cal-other':c.other,'cal-today':c.isToday,'cal-sel':isSel('start',c.dateStr)}" @click="selectDate('start',c.dateStr)">{{ c.d }}</span></div>
+                </div>
               </div>
-              <div class="date-pop" v-if="openPicker==='end'" @click.stop>
-                <div class="cal-head"><button class="cal-nav" @click="movePicker(-1)">‹</button><span class="cal-title">{{ pickerView.year }} 年 {{ pickerView.month+1 }} 月</span><button class="cal-nav" @click="movePicker(1)">›</button></div>
-                <div class="cal-grid cal-week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
-                <div class="cal-grid"><span v-for="c in pickerDays" :key="c.dateStr" class="cal-cell" :class="{'cal-other':c.other,'cal-today':c.isToday,'cal-sel':isSel('end',c.dateStr)}" @click="selectDate('end',c.dateStr)">{{ c.d }}</span></div>
+              <span class="date-sep">~</span>
+              <div class="date-wrap" :class="{'date-wrap-open':openPicker==='end'}">
+                <div class="date-field" :class="{'date-field-active':openPicker==='end'}" @click="openPickerFor('end')">
+                  <svg class="date-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                  <span :class="{'date-placeholder':!customEnd}">{{ customEnd || '结束日期' }}</span>
+                </div>
+                <div class="date-pop" v-if="openPicker==='end'" @click.stop>
+                  <div class="cal-head"><button class="cal-nav" @click="movePicker(-1)">‹</button><span class="cal-title">{{ pickerView.year }} 年 {{ pickerView.month+1 }} 月</span><button class="cal-nav" @click="movePicker(1)">›</button></div>
+                  <div class="cal-grid cal-week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+                  <div class="cal-grid"><span v-for="c in pickerDays" :key="c.dateStr" class="cal-cell" :class="{'cal-other':c.other,'cal-today':c.isToday,'cal-sel':isSel('end',c.dateStr)}" @click="selectDate('end',c.dateStr)">{{ c.d }}</span></div>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-        <div>
-          <label class="field-label">时间维度</label>
-          <div class="dim-group">
-            <button v-for="dim in timeDimensions" :key="dim.value"
-                    class="dim-chip" :class="{'dim-active':timeDimension===dim.value}" @click="timeDimension=dim.value;updateCharts()">{{ dim.label }}</button>
+            </template>
           </div>
         </div>
       </div>
@@ -497,7 +539,6 @@ createApp({ setup() {
   const selectedTeam=ref('TeamA');
   const selectedAccount=ref('all');
   const timeMode=ref('last7');
-  const timeDimension=ref('day');
   const customStart=ref('');
   const customEnd=ref('');
   /* 自定义日期选择器 */
@@ -526,9 +567,8 @@ createApp({ setup() {
   function movePicker(delta){ let {year,month}=pickerView.value; month+=delta; if(month<0){month=11;year--;} else if(month>11){month=0;year++;} pickerView.value={year,month}; }
   function isSel(which,ds){ return (which==='start'?customStart.value:customEnd.value)===ds; }
   function selectDate(which,ds){
-    if(which==='start'){ customStart.value=ds; if(customEnd.value&&ds>customEnd.value) customEnd.value=ds; }
-    else { customEnd.value=ds; if(customStart.value&&ds<customStart.value) customStart.value=ds; }
-    openPicker.value=null;
+    if(which==='start'){ customStart.value=ds; if(customEnd.value&&ds>customEnd.value) customEnd.value=ds; openPicker.value='end'; }
+    else { customEnd.value=ds; if(customStart.value&&ds<customStart.value) customStart.value=ds; openPicker.value=null; }
   }
   const currentDate=ref(new Date().toLocaleString('zh-CN'));
   const loading=ref(true);
@@ -542,11 +582,6 @@ createApp({ setup() {
     {label:'最近7天',value:'last7'},
     {label:'最近30天',value:'last30'},
     {label:'自定义',value:'custom'},
-  ];
-  const timeDimensions=[
-    {label:'按天',value:'day'},
-    {label:'按周',value:'week'},
-    {label:'按月',value:'month'},
   ];
   const chartColors=['#6366F1','#EC4899','#14B8A6','#F59E0B','#3B82F6','#8B5CF6','#EF4444','#10B981'];
 
@@ -689,43 +724,14 @@ createApp({ setup() {
   /* ============ 折线图 ============ */
   function computeLineData(){
     const dates=getFilteredDates();
-    let labels=[],costData=[],commissionData=[];
     const raw=filteredMetrics.value.rawData;
-    if(timeDimension.value==='day'){
-      labels=dates;
-      dates.forEach(date=>{
-        const dd=raw.filter(d=>d.date===date);
-        costData.push(dd.reduce((s,d)=>s+d.cost,0));
-        commissionData.push(dd.reduce((s,d)=>s+d.commission,0));
-      });
-    } else if(timeDimension.value==='week'){
-      const weeks={};
-      dates.forEach(date=>{
-        const d=new Date(date); const dow=d.getDay();
-        const monday=new Date(d); monday.setDate(d.getDate()-dow+(dow===0?-6:1));
-        const wk=monday.toISOString().split('T')[0];
-        if(!weeks[wk]) weeks[wk]={cost:0,commission:0};
-        const dd=raw.filter(x=>x.date===date);
-        weeks[wk].cost+=dd.reduce((s,x)=>s+x.cost,0);
-        weeks[wk].commission+=dd.reduce((s,x)=>s+x.commission,0);
-      });
-      labels=Object.keys(weeks);
-      costData=Object.values(weeks).map(w=>w.cost);
-      commissionData=Object.values(weeks).map(w=>w.commission);
-    } else if(timeDimension.value==='month'){
-      const months={};
-      dates.forEach(date=>{
-        const mk=date.substring(0,7);
-        if(!months[mk]) months[mk]={cost:0,commission:0};
-        const dd=raw.filter(x=>x.date===date);
-        months[mk].cost+=dd.reduce((s,x)=>s+x.cost,0);
-        months[mk].commission+=dd.reduce((s,x)=>s+x.commission,0);
-      });
-      labels=Object.keys(months);
-      costData=Object.values(months).map(m=>m.cost);
-      commissionData=Object.values(months).map(m=>m.commission);
-    }
-    return {labels,costData,commissionData};
+    const costData=[],commissionData=[];
+    dates.forEach(date=>{
+      const dd=raw.filter(d=>d.date===date);
+      costData.push(dd.reduce((s,d)=>s+d.cost,0));
+      commissionData.push(dd.reduce((s,d)=>s+d.commission,0));
+    });
+    return {labels:dates,costData,commissionData};
   }
   function renderLineChart(){
     const canvas=lineChartRef.value; if(!canvas) return;
@@ -772,9 +778,9 @@ createApp({ setup() {
       const cx=(chart.chartArea.left+chart.chartArea.right)/2;
       const cy=(chart.chartArea.top+chart.chartArea.bottom)/2;
       c.textAlign='center'; c.textBaseline='middle';
-      c.font='bold 18px TencentSans, PingFang SC, Microsoft YaHei, sans-serif'; c.fillStyle='#374151';
+      c.font='bold 18px PingFang SC, Microsoft YaHei, sans-serif'; c.fillStyle='#374151';
       c.fillText(formatNumber(donutCenterTotal),cx,cy-8);
-      c.font='12px TencentSans, PingFang SC, Microsoft YaHei, sans-serif'; c.fillStyle='#9CA3AF';
+      c.font='12px PingFang SC, Microsoft YaHei, sans-serif'; c.fillStyle='#9CA3AF';
       c.fillText('总 GMV',cx,cy+12);
     },
   };
@@ -1004,14 +1010,14 @@ createApp({ setup() {
     updateCharts();
     loading.value=false;
   });
-  watch([selectedAccount,timeMode,timeDimension,customStart,customEnd],()=>updateCharts());
+  watch([selectedAccount,timeMode,customStart,customEnd],()=>updateCharts());
   watch(selectedTeam,()=>{ selectedAccount.value='all'; updateCharts(); });
   watch(()=>importedData.value,()=>{ selectedAccount.value='all'; updateCharts(); },{deep:true});
 
   return {
-    selectedTeam,selectedAccount,timeMode,timeDimension,customStart,customEnd,currentDate,loading,
+    selectedTeam,selectedAccount,timeMode,customStart,customEnd,currentDate,loading,
     openPicker,pickerView,pickerDays,openPickerFor,closePicker,movePicker,isSel,selectDate,
-    timeQuickOptions,timeDimensions,currentAccounts,filteredMetrics,orderDetails,donutLegend,accountComparison,kpis,
+    timeQuickOptions,currentAccounts,filteredMetrics,orderDetails,donutLegend,accountComparison,kpis,
     importedCount,importedAtText,donutChartRef,lineChartRef,
     formatNumber,tagClass,copyId,openProduct,onTeamChange,selectTimeRange,updateCharts,
     showImport,importTeam,dailyFileName,ordersFileName,importError,toastMsg,
