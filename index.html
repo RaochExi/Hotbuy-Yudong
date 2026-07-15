@@ -221,6 +221,9 @@
     .img-preview{margin-top:12px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:#f8fafc;}
     .img-preview img{display:block;width:100%;max-height:240px;object-fit:contain;}
     .img-note{font-size:12px;color:#94a3b8;line-height:1.6;margin-top:10px;background:#f8fafc;border:1px dashed #e2e8f0;border-radius:10px;padding:10px 12px;}
+    .ocr-raw{margin-top:10px;border:1px solid var(--border);border-radius:10px;background:#f8fafc;font-size:12px;}
+    .ocr-raw summary{cursor:pointer;padding:8px 12px;color:#475569;user-select:none;font-weight:600;}
+    .ocr-raw pre{margin:0;padding:0 12px 12px;white-space:pre-wrap;word-break:break-all;max-height:200px;overflow:auto;font-family:ui-monospace,Menlo,Consolas,monospace;line-height:1.5;color:#1e293b;}
     .ref-img{margin-top:12px;border-radius:12px;overflow:hidden;border:1px solid var(--border);background:#f8fafc;}
     .ref-img-label{display:block;font-size:11px;color:#94a3b8;padding:6px 10px 0;}
     .ref-img img{display:block;width:100%;max-height:200px;object-fit:contain;}
@@ -577,8 +580,9 @@
           <div v-if="importImagePreview" class="img-preview">
             <img :src="importImagePreview" alt="预览">
           </div>
-          <button class="btn-primary block" v-if="importImagePreview" @click="recognizeImage">🔍 开始识别</button>
-          <div class="img-note">图片自动识别需接入 OCR / 大模型视觉服务（如腾讯云 OCR、混元视觉等）。当前为纯前端版本未内置识别引擎，可点下方「对照手动填写」边看截图边录入；配置识别 API 后即可一键解析。</div>
+          <button class="btn-primary block" v-if="importImagePreview" :disabled="ocrBusy" @click="recognizeImage">{{ ocrMsg || '🔍 开始识别' }}</button>
+          <details class="ocr-raw" v-if="ocrText"><summary>识别原文（可核对 / 复制）</summary><pre>{{ ocrText }}</pre></details>
+          <div class="img-note">已接入 <b>纯前端 OCR（Tesseract.js）</b>，无需 API Key、不上传服务器：点「开始识别」即从截图中提取 消耗 / 佣金 / GMV / 订单数 并预填到录入表单；识别后请核对，必要时点下方「对照手动填写」手动修正。</div>
           <button class="btn-ghost block" v-if="importImagePreview" @click="importTab='manual'">✏️ 对照手动填写（保留截图）</button>
         </div>
 
@@ -1222,6 +1226,7 @@ createApp({
   resetManualRows();
   watch(importTeam,()=>resetManualRows());
   const importImageName=ref(''); const importImagePreview=ref(''); const importImageFile=ref(null);
+  const ocrBusy=ref(false); const ocrMsg=ref(''); const ocrText=ref('');
   let toastTimer=null;
   function toast(msg){ toastMsg.value=msg; if(toastTimer) clearTimeout(toastTimer); toastTimer=setTimeout(()=>{toastMsg.value='';},2600); }
   function openImport(){ importError.value=''; dailyFileName.value=dailyFile.value?dailyFileName.value:''; showImport.value=true; }
@@ -1276,10 +1281,70 @@ createApp({
     importImagePreview.value=URL.createObjectURL(f);
     importError.value='';
   }
-  function recognizeImage(){
+  /* ============ 图片 OCR 识别（Tesseract.js，纯前端，无需 API Key） ============ */
+  let _tesseract=null;
+  function loadTesseract(){
+    return new Promise((res,rej)=>{
+      if(window.Tesseract){ _tesseract=window.Tesseract; res(window.Tesseract); return; }
+      if(_tesseract){ res(_tesseract); return; }
+      const s=document.createElement('script');
+      s.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+      s.onload=()=>{ if(window.Tesseract){ _tesseract=window.Tesseract; res(window.Tesseract); } else { rej(new Error('OCR 引擎初始化失败')); } };
+      s.onerror=()=>rej(new Error('OCR 引擎加载失败（请检查网络后重试，或改用「对照手动填写」）'));
+      document.head.appendChild(s);
+    });
+  }
+  // 在归一化文本中，按候选标签提取其后的数字（支持 万/亿 单位）
+  function _numAfterLabel(norm,labels){
+    for(const lab of labels){
+      const l=lab.replace(/\s+/g,'');
+      const re=new RegExp(l+'[^\\d万千亿.]{0,4}?([\\d,]+(?:\\.\\d+)?)\\s*(万|亿)?','i');
+      const m=norm.match(re);
+      if(m){ let n=parseFloat(String(m[1]).replace(/,/g,'')); if(m[2]==='万') n*=10000; else if(m[2]==='亿') n*=1e8; return n?String(n):''; }
+    }
+    return '';
+  }
+  function parseOcrText(text){
+    const norm=text.replace(/\s+/g,'');
+    const out={date:'',cost:'',commission:'',gmv:'',orders:''};
+    const dm=norm.match(/(\d{4})[-/.年](\d{1,2})[-/.月](\d{1,2})/);
+    if(dm){ out.date=dm[1]+'-'+String(dm[2]).padStart(2,'0')+'-'+String(dm[3]).padStart(2,'0'); }
+    out.cost=_numAfterLabel(norm,['广告消耗','总消耗','消耗','花费','成本','投入']);
+    out.commission=_numAfterLabel(norm,['预估佣金','佣金','预估收入']);
+    out.gmv=_numAfterLabel(norm,['GMV','成交金额','成交总额','成交额','销售额']);
+    out.orders=_numAfterLabel(norm,['成交订单数','支付订单数','订单数','订单量']);
+    return out;
+  }
+  function fillFromOcr(p){
+    if(!manualRows.value.length) resetManualRows();
+    const row=manualRows.value[0];
+    if(p.date) row.date=p.date;
+    if(p.cost) row.cost=p.cost;
+    if(p.commission) row.commission=p.commission;
+    if(p.gmv) row.gmv=p.gmv;
+    if(p.orders) row.orders=p.orders;
+    manualRows.value=[...manualRows.value];
+  }
+  async function recognizeImage(){
     if(!importImageFile.value){ importError.value='请先上传截图'; return; }
-    // 纯前端版本未内置 OCR/视觉识别引擎；接入识别服务后，可在此将 importImageFile 发送到识别 API 并解析为投放数据。
-    toast('图片识别需接入 OCR / 视觉服务，请「对照手动填写」或配置识别 API');
+    ocrBusy.value=true; ocrMsg.value='加载 OCR 引擎…'; importError.value=''; ocrText.value='';
+    try{
+      const T=await loadTesseract();
+      const worker=await T.createWorker({ logger:m=>{ if(m&&m.status==='recognizing text'){ ocrMsg.value='识别中 '+Math.round((m.progress||0)*100)+'%'; } } });
+      await worker.loadLanguage('chi_sim+eng');
+      await worker.initialize('chi_sim+eng');
+      ocrMsg.value='识别中 0%';
+      const ret=await worker.recognize(importImageFile.value);
+      await worker.terminate();
+      ocrText.value=(ret.data&&ret.data.text)||'';
+      const parsed=parseOcrText(ocrText.value);
+      const got=parsed.cost||parsed.commission||parsed.gmv||parsed.orders||parsed.date;
+      if(!got){ importError.value='未识别到投放数据，请确认截图含 消耗/佣金/GMV/订单数，或改用「对照手动填写」'; return; }
+      fillFromOcr(parsed);
+      importTab.value='manual';
+      toast('识别完成，已预填到录入表单，请核对后点击「录入」');
+    }catch(e){ importError.value=(e&&e.message)||'识别失败'; }
+    finally{ ocrBusy.value=false; ocrMsg.value=''; }
   }
   function resetToMock(){
     importedData.value={TeamA:null,TeamB:null}; selectedAccount.value='all';
@@ -1416,7 +1481,7 @@ createApp({
     importedCount,importedAtText,donutChartRef,lineChartRef,
 
     formatNumber,formatMoney,tagClass,copyId,openProduct,onTeamChange,selectTimeRange,updateCharts,
-    showAdminBar,showImport,importTab,importTeam,manualTeamAccounts,manualRows,importImageName,importImagePreview,dailyFileName,ordersFileName,importError,toastMsg,
+    showAdminBar,showImport,importTab,importTeam,manualTeamAccounts,manualRows,importImageName,importImagePreview,dailyFileName,ordersFileName,importError,toastMsg,ocrBusy,ocrMsg,ocrText,
     openImport,closeImport,onDailyFile,onOrdersFile,doImport,resetToMock,downloadTemplate,addManualRow,removeManualRow,doManualImport,onImageFile,recognizeImage,
     exportData,onImportData,importDataFile,exportDataJs,syncToRepo,syncStatus,repoSync,saveRepoSync,
   };
