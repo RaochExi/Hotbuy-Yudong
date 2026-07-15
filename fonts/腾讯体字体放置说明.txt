@@ -1,0 +1,7 @@
+将你拥有的「腾讯体」授权字体文件重命名为 TencentSans.woff2 放在本文件夹下即可生效：
+  fonts/TencentSans.woff2
+
+说明：
+- 腾讯体为腾讯商业授权字体，请仅在使用方已获授权的前提下使用。
+- 若没有该文件，看板会自动回退到 PingFang SC / 微软雅黑 / 系统字体，不影响使用。
+- 如字体为 .ttf / .otf，请自行转换为 .woff2 后放入，并同步修改 dashboard.html 中 @font-face 的 url 与 format。
