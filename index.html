@@ -312,10 +312,67 @@
       .kpi-value{font-size:23px;}
       .select{padding:13px 38px 13px 14px;font-size:15px;}
     }
+  /* ===== 手机端布局（移动优先，独立重写） ===== */
+  .mobile-app{display:flex;flex-direction:column;min-height:100vh;background:#f5f7fb;color:#1f2937;}
+  .m-top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:#ffffff;border-bottom:1px solid #eef1f6;}
+  .m-team{display:flex;align-items:center;gap:8px;min-width:0;}
+  .m-team-avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;background:#eef2f8;flex:none;}
+  .m-team-name{font-size:14px;font-weight:600;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:38vw;}
+  .m-team-switch{font-size:12px;color:#2563eb;background:#eef4ff;padding:3px 9px;border-radius:999px;flex:none;}
+  .m-date{flex:none;display:flex;align-items:center;gap:5px;font-size:13px;color:#475569;background:#f1f5f9;padding:6px 12px;border-radius:999px;max-width:46vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .m-main{flex:1;padding:14px 14px 86px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .m-section{display:flex;flex-direction:column;gap:14px;}
+  .m-kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .m-kpi{position:relative;background:#fff;border:1px solid #eef1f6;border-radius:14px;padding:12px 12px 12px 14px;overflow:hidden;}
+  .m-kpi-dot{position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px;}
+  .m-kpi.grad-blue .m-kpi-dot{background:#2563eb;}
+  .m-kpi.grad-green .m-kpi-dot{background:#059669;}
+  .m-kpi.grad-sky .m-kpi-dot{background:#0ea5e9;}
+  .m-kpi.grad-amber .m-kpi-dot{background:#d97706;}
+  .m-kpi.grad-teal .m-kpi-dot{background:#0891b2;}
+  .m-kpi.grad-slate .m-kpi-dot{background:#475569;}
+  .m-kpi-label{font-size:12px;color:#6b7280;margin-bottom:6px;}
+  .m-kpi-value{font-size:21px;font-weight:700;color:#111827;line-height:1.1;letter-spacing:-.3px;}
+  .m-kpi-pct{display:inline-block;margin-top:5px;font-size:11px;font-weight:600;}
+  .m-kpi-pct.kpi-up{color:#059669;}
+  .m-kpi-pct.kpi-down{color:#dc2626;}
+  .m-card{background:#fff;border:1px solid #eef1f6;border-radius:16px;padding:14px;}
+  .m-card-title{font-size:14px;font-weight:600;color:#1f2937;margin-bottom:10px;}
+  .m-chart-wrap{position:relative;height:200px;}
+  .m-donut-row{display:flex;align-items:center;gap:12px;}
+  .m-donut-wrap{position:relative;width:140px;height:140px;flex:none;}
+  .m-legend{flex:1;display:flex;flex-direction:column;gap:8px;min-width:0;}
+  .m-legend-item{display:flex;align-items:center;gap:7px;font-size:13px;}
+  .m-legend-dot{width:9px;height:9px;border-radius:50%;flex:none;}
+  .m-legend-name{color:#374151;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .m-legend-pct{color:#6b7280;font-weight:600;}
+  .m-acc-card{background:#fff;border:1px solid #eef1f6;border-radius:16px;padding:14px;}
+  .m-acc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .m-acc-name{font-size:14px;font-weight:600;color:#1f2937;}
+  .m-acc-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .m-acc-stat{background:#f7f9fc;border-radius:10px;padding:9px 10px;}
+  .m-acc-label{font-size:11px;color:#6b7280;margin-bottom:3px;}
+  .m-acc-val{font-size:16px;font-weight:700;color:#111827;}
+  .m-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .m-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .m-table th{position:sticky;top:0;background:#f7f9fc;color:#6b7280;font-weight:600;text-align:left;padding:7px 8px;white-space:nowrap;}
+  .m-table td{padding:7px 8px;border-top:1px solid #f0f2f6;color:#374151;white-space:nowrap;}
+  .m-btn-primary{display:block;width:100%;margin:4px 0 2px;padding:12px;border:none;border-radius:12px;background:#2563eb;color:#fff;font-size:14px;font-weight:600;}
+  .m-btn-ghost{display:inline-block;padding:9px 14px;border:1px solid #d8e0ec;border-radius:10px;background:#fff;color:#2563eb;font-size:13px;font-weight:600;}
+  .m-input{width:100%;padding:10px 12px;border:1px solid #d8e0ec;border-radius:10px;font-size:13px;margin-bottom:10px;box-sizing:border-box;}
+  .m-sync-row{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .m-switch{display:flex;align-items:center;gap:6px;font-size:13px;color:#475569;}
+  .m-sync-status{margin-top:8px;font-size:12px;color:#6b7280;min-height:16px;}
+  .m-tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;background:#fff;border-top:1px solid #eef1f6;padding:6px 0 calc(6px + env(safe-area-inset-bottom));}
+  .m-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;border:none;background:none;padding:6px 0;font-size:12px;color:#9aa3b2;}
+  .m-tab.m-tab-active{color:#2563eb;font-weight:700;}
+  .m-tab.m-tab-active::after{content:'';display:block;width:22px;height:3px;border-radius:3px;background:#2563eb;margin-top:3px;}
+
   </style>
 </head>
 <body>
 <div id="app">
+  <div v-if="!isMobile" class="pc-app">
   <div class="loading-overlay" v-if="loading">
     <div class="spinner"></div>
   </div>
@@ -609,9 +666,98 @@
       </div>
     </div>
   </div>
+  </div><!-- /pc-app -->
+
+  <!-- ============ 手机端布局（移动优先，独立重写） ============ -->
+  <div v-if="isMobile" class="mobile-app">
+    <header class="m-top">
+      <div class="m-team" @click="toggleTeam">
+        <img class="m-team-avatar" :src="selectedTeam==='TeamA'?'avatars/xiaolaomei.png':'avatars/gaozi.png'" alt="">
+        <span class="m-team-name">{{ selectedTeam==='TeamA'?'小老妹 Team':'豫东高子 Team' }}</span>
+        <span class="m-team-switch">切换</span>
+      </div>
+      <div class="m-date" @click="openPicker">{{ dateLabel }}</div>
+    </header>
+
+    <main class="m-main">
+      <section v-if="mobileTab==='overview'" class="m-section">
+        <div class="m-kpi-grid">
+          <div v-for="k in kpis" :key="k.key" class="m-kpi" :class="k.grad">
+            <span class="m-kpi-dot"></span>
+            <div class="m-kpi-label">{{ k.label }}</div>
+            <div class="m-kpi-value">{{ k.value }}</div>
+            <span class="m-kpi-pct" :class="k.goodClass">{{ k.arrow }} {{ k.pctText }}</span>
+          </div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-title">广告消耗 / 预估佣金 趋势</div>
+          <div class="m-chart-wrap"><canvas ref="mLineRef"></canvas></div>
+        </div>
+        <div class="m-card">
+          <div class="m-card-title">账号佣金占比</div>
+          <div class="m-donut-row">
+            <div class="m-donut-wrap"><canvas ref="mDonutRef"></canvas></div>
+            <div class="m-legend">
+              <div v-for="l in donutLegend" :key="l.name" class="m-legend-item">
+                <span class="m-legend-dot" :style="{background:l.color}"></span>
+                <span class="m-legend-name">{{ l.name }}</span>
+                <span class="m-legend-pct">{{ l.percent }}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section v-else-if="mobileTab==='compare'" class="m-section">
+        <div v-for="ad in accountComparison" :key="ad.name" class="m-acc-card">
+          <div class="m-acc-head"><span class="m-acc-name">{{ ad.name }}</span></div>
+          <div class="m-acc-stats">
+            <div class="m-acc-stat"><div class="m-acc-label">广告消耗</div><div class="m-acc-val">{{ formatMoney(ad.cost) }}</div></div>
+            <div class="m-acc-stat"><div class="m-acc-label">预估佣金</div><div class="m-acc-val">{{ formatMoney(ad.commission) }}</div></div>
+            <div class="m-acc-stat"><div class="m-acc-label">GMV</div><div class="m-acc-val">{{ formatNumber(ad.gmv) }}</div></div>
+            <div class="m-acc-stat"><div class="m-acc-label">投产比 ROI</div><div class="m-acc-val">{{ ad.roi.toFixed(2) }}</div></div>
+          </div>
+        </div>
+      </section>
+
+      <section v-else class="m-section">
+        <div class="m-card">
+          <div class="m-card-title">数据明细（商品 Top10）</div>
+          <div class="m-table-wrap">
+            <table class="m-table">
+              <thead><tr><th>日期</th><th>账号</th><th>消耗</th><th>佣金</th><th>GMV</th><th>订单</th></tr></thead>
+              <tbody>
+                <tr v-for="(o,i) in orderDetails" :key="i">
+                  <td>{{ o.date }}</td><td>{{ o.account }}</td>
+                  <td>{{ formatMoney(o.cost) }}</td><td>{{ formatMoney(o.commission) }}</td>
+                  <td>{{ formatNumber(o.gmv) }}</td><td>{{ formatNumber(o.orders) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <button class="m-btn-primary" @click="openImport">导入 / 更新数据</button>
+        <div class="m-card">
+          <div class="m-card-title">仓库自动同步</div>
+          <input class="m-input" type="password" v-model="repoSync.token" @input="saveRepoSync" placeholder="GitHub Token（仅存本机）">
+          <div class="m-sync-row">
+            <label class="m-switch"><input type="checkbox" v-model="repoSync.auto" @change="saveRepoSync"> 自动同步</label>
+            <button class="m-btn-ghost" @click="syncToRepo">立即同步</button>
+          </div>
+          <div class="m-sync-status">{{ syncStatus }}</div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="m-tabbar">
+      <button class="m-tab" :class="{'m-tab-active':mobileTab==='overview'}" @click="switchMobileTab('overview')">概览</button>
+      <button class="m-tab" :class="{'m-tab-active':mobileTab==='compare'}" @click="switchMobileTab('compare')">账号对比</button>
+      <button class="m-tab" :class="{'m-tab-active':mobileTab==='more'}" @click="switchMobileTab('more')">更多</button>
+    </nav>
+  </div>
 
   <!-- 管理员入口：默认对外隐藏；仅右下角低调齿轮可触发，带 ?admin=1 时顶部显示正式按钮 -->
-  <button class="admin-fab" @click="openImport" title="数据管理" aria-label="数据管理">
+  <button class="admin-fab" v-if="!isMobile" @click="openImport" title="数据管理" aria-label="数据管理">
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
   </button>
 
@@ -800,7 +946,20 @@ createApp({
   }
   const donutChartRef=ref(null);
   const lineChartRef=ref(null);
+  const mLineRef=ref(null);
+  const mDonutRef=ref(null);
   let donutChartInstance=null, lineChartInstance=null, donutCenterTotal=0;
+  let mDonutInstance=null, mLineInstance=null;
+
+  const isMobile=ref(typeof window!=='undefined' && window.matchMedia && window.matchMedia('(max-width:768px)').matches);
+  const mobileTab=ref('overview');
+  const dateLabel=computed(()=>{
+    if(timeMode.value==='custom') return customStart.value+' ～ '+customEnd.value;
+    const o=timeQuickOptions.find(t=>t.value===timeMode.value);
+    return o?o.label:'全部';
+  });
+  function toggleTeam(){ selectedTeam.value = selectedTeam.value==='TeamA'?'TeamB':'TeamA'; onTeamChange(); }
+  function switchMobileTab(tab){ mobileTab.value=tab; if(tab==='overview') nextTick(()=>updateCharts()); }
 
   const timeQuickOptions=[
     {label:'昨天',value:'yesterday'},
@@ -1050,7 +1209,44 @@ createApp({
       plugins:[centerTextPlugin],
     });
   }
-  function updateCharts(){ nextTick(()=>{ renderDonutChart(); renderLineChart(); }); }
+  function updateCharts(){ nextTick(()=>{ if(isMobile.value){ renderMobileDonut(); renderMobileLine(); } else { renderDonutChart(); renderLineChart(); } }); }
+  function renderMobileLine(){
+    const canvas=mLineRef.value; if(!canvas) return;
+    const ctx=canvas.getContext('2d');
+    const {labels,costData,commissionData}=computeLineData();
+    if(mLineInstance){ mLineInstance.data.labels=labels; mLineInstance.data.datasets[0].data=costData; mLineInstance.data.datasets[1].data=commissionData; mLineInstance.update(); return; }
+    const gc=ctx.createLinearGradient(0,0,0,240); gc.addColorStop(0,'rgba(37,99,235,0.22)'); gc.addColorStop(1,'rgba(37,99,235,0)');
+    const gm=ctx.createLinearGradient(0,0,0,240); gm.addColorStop(0,'rgba(5,150,105,0.22)'); gm.addColorStop(1,'rgba(5,150,105,0)');
+    mLineInstance=new Chart(ctx,{type:'line',data:{labels,datasets:[
+      {label:'广告消耗',data:costData,borderColor:'#2563eb',backgroundColor:gc,borderWidth:2.5,tension:0.4,fill:true,pointRadius:2,pointHoverRadius:5,pointBackgroundColor:'#2563eb'},
+      {label:'预估佣金',data:commissionData,borderColor:'#059669',backgroundColor:gm,borderWidth:2.5,tension:0.4,fill:true,pointRadius:2,pointHoverRadius:5,pointBackgroundColor:'#059669'},
+    ]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{display:true,position:'top',labels:{usePointStyle:true,padding:12,font:{size:11}}},
+          tooltip:{backgroundColor:'rgba(0,0,0,0.8)',titleFont:{size:12},bodyFont:{size:12},padding:8,cornerRadius:8,
+            callbacks:{label:c=>' '+c.dataset.label+': ¥'+c.parsed.y.toLocaleString()}},
+        },
+        scales:{
+          x:{grid:{display:false},ticks:{font:{size:10},maxRotation:45}},
+          y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{size:10},callback:v=>formatNumber(v)},border:{display:false}},
+        },
+        interaction:{mode:'index',intersect:false},
+      },
+    });
+  }
+  function renderMobileDonut(){
+    const canvas=mDonutRef.value; if(!canvas) return;
+    const ctx=canvas.getContext('2d');
+    const legend=donutLegend.value;
+    donutCenterTotal=legend.reduce((s,l)=>s+l.value,0);
+    let labels,values,colors;
+    if(selectedAccount.value!=='all'&&legend.length===1){ labels=[legend[0].name]; values=[100]; colors=[legend[0].color]; }
+    else { labels=legend.map(l=>l.name); values=legend.map(l=>parseFloat(l.percent)); colors=legend.map(l=>l.color); }
+    if(mDonutInstance){ mDonutInstance.data.labels=labels; mDonutInstance.data.datasets[0].data=values; mDonutInstance.data.datasets[0].backgroundColor=colors; mDonutInstance.update(); return; }
+    mDonutInstance=new Chart(ctx,{type:'doughnut',data:{labels,datasets:[{data:values,backgroundColor:colors,borderWidth:0,hoverOffset:8}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:false},tooltip:{backgroundColor:'rgba(0,0,0,0.8)',padding:10,cornerRadius:8,callbacks:{label:c=>' '+c.label+': '+c.parsed+'%'}}}},plugins:[centerTextPlugin]});
+  }
 
   /* ============ 交互 ============ */
   function onTeamChange(){ selectedAccount.value='all'; updateCharts(); }
@@ -1395,6 +1591,9 @@ createApp({
     customEnd.value=today.toISOString().split('T')[0]; customStart.value=weekAgo.toISOString().split('T')[0];
     updateCharts();
     loadRepoData(()=>{ loading.value=false; });
+    const onViewport=()=>{ const m=window.matchMedia('(max-width:768px)').matches; if(isMobile.value!==m){ isMobile.value=m; nextTick(updateCharts); } };
+    window.addEventListener('resize',onViewport);
+    window.addEventListener('orientationchange',onViewport);
   });
   watch([selectedAccount,timeMode,customStart,customEnd],()=>updateCharts());
   watch(selectedTeam,()=>{ selectedAccount.value='all'; updateCharts(); });
@@ -1405,6 +1604,7 @@ createApp({
     openPicker,pickerView,pickerDays,openCalendar,closePicker,movePicker,isRangeSel,isRangeIn,selectRangeDate,
     timeQuickOptions,accountOptions,importTeamOptions,currentAccounts,filteredMetrics,orderDetails,donutLegend,accountComparison,kpis,
     importedCount,importedAtText,donutChartRef,lineChartRef,
+    isMobile,mobileTab,dateLabel,toggleTeam,switchMobileTab,mLineRef,mDonutRef,
     formatNumber,formatMoney,tagClass,copyId,openProduct,onTeamChange,selectTimeRange,updateCharts,
     showAdminBar,showImport,importTab,importTeam,manualTeamAccounts,manualRows,importImageName,importImagePreview,dailyFileName,ordersFileName,importError,toastMsg,
     openImport,closeImport,onDailyFile,onOrdersFile,doImport,resetToMock,downloadTemplate,addManualRow,removeManualRow,doManualImport,onImageFile,recognizeImage,
