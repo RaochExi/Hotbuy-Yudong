@@ -1,1 +1,0 @@
-window.__DASHBOARD_PROBE__ = 1;
