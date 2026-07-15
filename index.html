@@ -4,510 +4,1020 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>达人电商数据看板</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="https://unpkg.com/vue@3.4.0/dist/vue.global.prod.js"></script>
   <style>
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f6fa; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
-    .grad-blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-    .grad-orange { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
-    .grad-green { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-    .grad-pink { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
-    .grad-gmv { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-    .grad-teal { background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); }
-    select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 30px; }
-    .btn-press { transition: transform 0.1s; }
-    .btn-press:active { transform: scale(0.96); }
-    .chart-container { position: relative; width: 100%; }
-    input[type="date"] { color-scheme: light; }
-    /* 顶部筛选栏 */
-    .filter-bar { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
-    .filter-label { font-size: 12px; color: #9ca3af; margin-bottom: 4px; display: block; }
-    .filter-group { display: flex; gap: 8px; flex-wrap: wrap; }
-    .filter-chip { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: 1px solid #e5e7eb; background: white; color: #6b7280; }
-    .filter-chip:hover { border-color: #a5b4fc; }
-    .filter-chip.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-color: transparent; }
-    .dim-chip { padding: 5px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; transition: all 0.2s; border: 1px solid #e5e7eb; background: white; color: #6b7280; }
-    .dim-chip:hover { border-color: #a5b4fc; }
-    .dim-chip.active { background: #ede9fe; color: #7c3aed; border-color: #c4b5fd; font-weight: 600; }
+    @font-face{
+      font-family:'TencentSans';
+      src:local('TencentSans'), local('腾讯体'), url('fonts/TencentSans.woff2') format('woff2');
+      font-weight:400 700; font-display:swap;
+    }
+    :root{
+      --bg:#f4f5f9; --card:#fff; --ink:#1f2937; --muted:#6b7280; --light:#9ca3af;
+      --border:#e8eaf0; --primary:#667eea; --primary-d:#764ba2;
+      --font:'TencentSans','PingFang SC','Microsoft YaHei','Hiragino Sans GB',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;}
+    ::-webkit-scrollbar{width:6px;height:6px;}
+    ::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px;}
+    .container{max-width:1200px;margin:0 auto;padding:0 16px;}
+
+    /* 顶部 */
+    .header{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.06);position:sticky;top:0;z-index:40;}
+    .header-inner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;flex-wrap:wrap;}
+    .brand{display:flex;align-items:center;gap:10px;}
+    .brand-icon{width:32px;height:32px;display:flex;align-items:center;justify-content:center;}
+    .brand-title{font-size:18px;font-weight:700;margin:0;}
+    .brand-sub{font-size:12px;color:var(--light);margin:2px 0 0;}
+    .team-switch{display:flex;background:#f3f0ff;border-radius:14px;padding:5px;gap:6px;}
+    .team-chip{display:flex;align-items:center;gap:8px;border:none;background:transparent;padding:7px 14px;border-radius:11px;font-size:13px;font-weight:600;color:#9a8fd6;cursor:pointer;transition:.22s;white-space:nowrap;}
+    .team-chip:hover{color:#6d28d9;}
+    .team-chip-active{background:#fff;color:#6d28d9;box-shadow:0 2px 8px rgba(109,40,217,.15);}
+    .team-avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+    .import-btn{border:1px solid var(--primary);background:#fff;color:var(--primary);padding:8px 14px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:.2s;}
+    .import-btn:hover{background:#f5f3ff;}
+
+    /* 筛选栏 */
+    .filter-bar{background:#fff;border-radius:16px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.06);margin:20px 0;}
+    .filter-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+    .filter-title{font-size:14px;font-weight:700;color:#374151;}
+    .badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:20px;background:#eef2ff;color:#4f46e5;font-weight:600;}
+    .badge.mock{background:#f1f5f9;color:#64748b;}
+    .filter-grid{display:grid;grid-template-columns:1fr;gap:16px;}
+    @media(min-width:768px){.filter-grid{grid-template-columns:repeat(3,1fr);}}
+    .field-label{font-size:12px;color:var(--light);margin-bottom:6px;display:block;}
+    .select{width:100%;background:#fff;border:1px solid var(--border);border-radius:12px;padding:11px 38px 11px 14px;font-size:14px;font-weight:500;color:#374151;outline:none;
+      appearance:none;-webkit-appearance:none;cursor:pointer;
+      box-shadow:0 1px 2px rgba(0,0,0,.03);transition:.2s;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='none' stroke='%23667eea' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M3 5l4 4 4-4'/%3E%3C/svg%3E");
+      background-repeat:no-repeat;background-position:right 14px center;}
+    .select:hover{border-color:#c7cdf5;}
+    .select:focus{box-shadow:0 0 0 3px rgba(102,126,234,.18);border-color:var(--primary);}
+    .filter-group{display:flex;gap:8px;flex-wrap:wrap;}
+    .chip{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--muted);transition:.2s;}
+    .chip:hover{border-color:#a5b4fc;}
+    .chip-active{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border-color:transparent;}
+    .dim-group{display:flex;gap:8px;flex-wrap:wrap;}
+    .dim-chip{padding:5px 12px;border-radius:8px;font-size:12px;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--muted);transition:.2s;}
+    .dim-chip:hover{border-color:#a5b4fc;}
+    .dim-active{background:#ede9fe;color:#7c3aed;border-color:#c4b5fd;font-weight:600;}
+    .date-row{display:flex;gap:8px;margin-top:10px;align-items:center;}
+    .date-wrap{position:relative;flex:1;}
+    .date-wrap-open{z-index:56;}
+    .date-field{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:11px 14px;font-size:13px;font-weight:500;color:#374151;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.03);transition:.2s;user-select:none;}
+    .date-field:hover{border-color:#c7cdf5;}
+    .date-field-active{border-color:var(--primary);box-shadow:0 0 0 3px rgba(102,126,234,.18);}
+    .date-cal{width:16px;height:16px;flex-shrink:0;color:#667eea;}
+    .date-placeholder{color:#9ca3af;}
+    .date-sep{color:#9ca3af;font-weight:600;}
+    .date-pop{position:absolute;top:calc(100% + 8px);left:0;z-index:60;width:264px;background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:0 16px 40px rgba(31,41,55,.16);}
+    .cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+    .cal-title{font-size:14px;font-weight:700;color:#1f2937;}
+    .cal-nav{width:28px;height:28px;border:none;background:#f3f4f6;border-radius:8px;font-size:16px;color:#6b7280;cursor:pointer;transition:.2s;line-height:1;}
+    .cal-nav:hover{background:#eef2ff;color:#667eea;}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+    .cal-week{margin-bottom:4px;}
+    .cal-week span{text-align:center;font-size:11px;color:#9ca3af;padding:4px 0;}
+    .cal-cell{text-align:center;font-size:13px;padding:7px 0;border-radius:8px;cursor:pointer;color:#374151;transition:.15s;}
+    .cal-cell:hover{background:#eef2ff;color:#667eea;}
+    .cal-other{color:#cbd5e1;}
+    .cal-today{font-weight:700;color:#667eea;}
+    .cal-sel{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff !important;font-weight:700;}
+    .cal-sel:hover{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;}
+    .picker-backdrop{position:fixed;inset:0;z-index:55;}
+
+    /* KPI */
+    .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:20px;}
+    @media(min-width:640px){.kpi-grid{grid-template-columns:repeat(3,1fr);}}
+    @media(min-width:1024px){.kpi-grid{grid-template-columns:repeat(4,1fr);}}
+    .kpi-card{border-radius:18px;padding:16px 18px;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.08);display:flex;flex-direction:column;gap:8px;min-height:104px;}
+    .kpi-gmv{grid-column:span 2;}
+    .kpi-label{font-size:13px;opacity:.92;display:flex;align-items:center;gap:6px;}
+    .kpi-value{font-size:25px;font-weight:800;line-height:1.1;word-break:break-all;}
+    .kpi-gmv .kpi-value{font-size:32px;}
+    .kpi-foot{font-size:12px;opacity:.95;display:flex;align-items:center;gap:8px;}
+    .kpi-delta{background:rgba(255,255,255,.88);border-radius:20px;padding:2px 8px;font-weight:700;font-size:12px;}
+    .kpi-up{color:#059669;}
+    .kpi-down{color:#dc2626;}
+    /* KPI 渐变 */
+    .grad-gmv{background:linear-gradient(135deg,#43e97b,#38f9d7);}
+    .grad-blue{background:linear-gradient(135deg,#667eea,#764ba2);}
+    .grad-orange{background:linear-gradient(135deg,#f093fb,#f5576c);}
+    .grad-purple{background:linear-gradient(135deg,#a18cd1,#fbc2eb);}
+    .grad-teal{background:linear-gradient(135deg,#4facfe,#00f2fe);}
+    .grad-amber{background:linear-gradient(135deg,#fa709a,#fee140);}
+    .grad-indigo{background:linear-gradient(135deg,#5b6ef5,#9b5bef);}
+
+    /* 面板 */
+    .panel{background:#fff;border-radius:18px;padding:18px 20px;box-shadow:0 1px 3px rgba(0,0,0,.05);margin-bottom:20px;}
+    .panel-title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;margin:0 0 16px;}
+    .row-3-1{display:grid;grid-template-columns:1fr;gap:20px;}
+    .row-2{display:grid;grid-template-columns:1fr;gap:20px;}
+    @media(min-width:1024px){.row-3-1{grid-template-columns:1fr 2fr;}.row-2{grid-template-columns:1fr 1fr;}}
+    .chart-wrap{position:relative;width:100%;}
+    .donut-wrap{height:220px;}
+    .line-wrap{height:300px;}
+
+    /* 图例 */
+    .legend{margin-top:16px;display:flex;flex-direction:column;gap:6px;}
+    .legend-row{display:flex;align-items:center;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid #f3f4f6;}
+    .legend-left{display:flex;align-items:center;min-width:0;}
+    .legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+    .legend-name{color:#374151;font-size:13px;margin-left:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+    .legend-val{font-weight:700;color:#1f2937;font-size:13px;}
+    .legend-pct{color:#9ca3af;font-size:12px;margin-left:4px;}
+
+    /* 订单列表 */
+    .list{display:flex;flex-direction:column;gap:8px;}
+    .list-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:14px;transition:.15s;cursor:pointer;}
+    .list-item:hover{background:#f7f8fa;}
+    .rank{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;background:#cbd5e1;}
+    .rank-1{background:linear-gradient(135deg,#667eea,#764ba2);}
+    .rank-2{background:linear-gradient(135deg,#f093fb,#f5576c);}
+    .rank-3{background:linear-gradient(135deg,#4facfe,#00f2fe);}
+    .item-main{flex:1;min-width:0;}
+    .item-name{font-size:14px;font-weight:600;color:#1f2937;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:8px;}
+    .item-id{font-size:12px;color:#9ca3af;margin-top:2px;}
+    .item-amt{text-align:right;flex-shrink:0;}
+    .item-amt .v{font-size:14px;font-weight:700;color:#1f2937;}
+    .item-amt .o{font-size:12px;color:#9ca3af;margin-top:2px;}
+    .tag{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:600;flex-shrink:0;}
+    .tag-best{background:#fee2e2;color:#dc2626;}
+    .tag-new{background:#dbeafe;color:#2563eb;}
+    .tag-flow{background:#dcfce7;color:#16a34a;}
+    .tag-pre{background:#ede9fe;color:#7c3aed;}
+    .tag-none{background:#f3f4f6;color:#9ca3af;}
+    .item-thumb{width:42px;height:42px;border-radius:12px;flex-shrink:0;background:#f3f4f6;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#9ca3af;overflow:hidden;transition:.15s;}
+    .item-thumb:hover{box-shadow:0 0 0 2px #c7cdf5;color:#667eea;}
+    .item-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+    .item-id-link{cursor:pointer;color:#6366f1;transition:.15s;}
+    .item-id-link:hover{text-decoration:underline;}
+    .item-id-link .copy-tag{font-size:10px;color:#9ca3af;margin-left:4px;font-weight:500;}
+
+    /* 账号对比 */
+    .acc-card{background:#f7f8fa;border-radius:14px;padding:16px;margin-bottom:14px;}
+    .acc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+    .acc-name{font-weight:600;font-size:14px;color:#1f2937;}
+    .acc-gmv{font-weight:700;font-size:14px;color:#7c3aed;}
+    .acc-label{font-size:12px;color:#9ca3af;margin-bottom:4px;display:flex;justify-content:space-between;}
+    .acc-bar{width:100%;background:#e5e7eb;border-radius:999px;height:10px;overflow:hidden;}
+    .acc-fill{height:10px;border-radius:999px;transition:width .5s;}
+    .acc-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px;}
+    .stat{background:#fff;border-radius:10px;padding:8px;text-align:center;}
+    .stat-label{font-size:12px;color:#9ca3af;}
+    .stat-val{font-size:14px;font-weight:700;color:#374151;margin-top:2px;word-break:break-all;}
+
+    .footer{text-align:center;padding:20px;font-size:12px;color:#9ca3af;line-height:1.7;}
+
+    /* 弹窗 */
+    .modal-overlay{position:fixed;inset:0;background:rgba(15,23,42,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:100;}
+    .modal{background:#fff;border-radius:18px;width:100%;max-width:480px;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);}
+    .modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;border-bottom:1px solid #f1f5f9;}
+    .modal-title{font-size:17px;font-weight:700;margin:0;}
+    .modal-close{border:none;background:#f1f5f9;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;color:#64748b;}
+    .modal-body{padding:20px;}
+    .import-row{margin-bottom:18px;}
+    .dropzone{border:2px dashed #c7d2fe;border-radius:14px;padding:18px;text-align:center;cursor:pointer;transition:.2s;background:#fafaff;}
+    .dropzone:hover{border-color:#6366f1;background:#f5f3ff;}
+    .dz-icon{font-size:28px;}
+    .dz-text{font-size:14px;font-weight:600;color:#374151;margin-top:6px;}
+    .dz-hint{font-size:12px;color:#9ca3af;margin-top:4px;line-height:1.5;}
+    .file-name{font-size:12px;color:#16a34a;margin-top:8px;font-weight:600;}
+    .tmpl-link{font-size:12px;color:#6366f1;cursor:pointer;text-decoration:underline;margin-top:6px;display:inline-block;}
+    .modal-actions{display:flex;gap:10px;margin-top:8px;}
+    .btn-primary{flex:1;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;padding:12px;border-radius:12px;font-weight:700;font-size:14px;cursor:pointer;}
+    .btn-ghost{flex:1;background:#f1f5f9;color:#475569;border:none;padding:12px;border-radius:12px;font-weight:600;font-size:14px;cursor:pointer;}
+    .err-msg{color:#dc2626;font-size:13px;margin-top:10px;background:#fef2f2;padding:10px;border-radius:10px;}
+
+    /* Toast & loading */
+    .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:200;animation:fadein .2s;max-width:90vw;}
+    @keyframes fadein{from{opacity:0;transform:translate(-50%,10px);}to{opacity:1;transform:translate(-50%,0);}}
+    .loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:300;}
+    .spinner{width:40px;height:40px;border:4px solid #e5e7eb;border-top-color:#667eea;border-radius:50%;animation:spin 1s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
   </style>
-</head><body>
+</head>
+<body>
 <div id="app">
-  <!-- ===== 顶部标题栏 ===== -->
-  <header class="bg-white shadow-sm sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <span class="text-2xl">&#x1F4CA;</span>
+  <div class="loading-overlay" v-if="loading">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- 顶部标题栏 -->
+  <header class="header">
+    <div class="container header-inner">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" aria-label="shop">
+          <path d="M10 16 Q10 10 16 10 h32 q6 0 6 6 l-2 36 q0 6 -6 6 H16 q-6 0 -6 -6 Z" fill="#dc2626"/>
+          <path d="M22 26 Q32 38 42 26" fill="none" stroke="#111827" stroke-width="5" stroke-linecap="round"/>
+        </svg>
         <div>
-          <h1 class="text-lg sm:text-xl font-bold text-gray-800">达人电商数据看板</h1>
-          <p class="text-xs text-gray-400 hidden sm:block">实时监控达人广告消耗、佣金和订单数据</p>
+          <h1 class="brand-title">达人电商数据看板</h1>
+          <p class="brand-sub">实时监控达人团队广告消耗 · 佣金 · 订单</p>
         </div>
       </div>
-      <select v-model="selectedTeam" @change="onTeamChange"
-              class="bg-purple-50 border border-purple-200 text-purple-700 rounded-xl px-3 py-2 text-sm font-medium focus:ring-2 focus:ring-purple-300 outline-none">
-        <option value="TeamA">豫东小老妹 Team</option>
-        <option value="TeamB">豫东高子 Team</option>
-      </select>
+      <div class="team-switch">
+        <button class="team-chip" :class="{'team-chip-active':selectedTeam==='TeamA'}" @click="selectedTeam='TeamA'">
+          <span class="team-avatar" style="background:linear-gradient(135deg,#fb7185,#f43f5e)">妹</span>
+          <span>小老妹</span>
+        </button>
+        <button class="team-chip" :class="{'team-chip-active':selectedTeam==='TeamB'}" @click="selectedTeam='TeamB'">
+          <span class="team-avatar" style="background:linear-gradient(135deg,#60a5fa,#3b82f6)">高</span>
+          <span>高子</span>
+        </button>
+      </div>
+      <button class="import-btn" @click="openImport">⬆ 导入数据</button>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-    <!-- ===== 筛选区域 ===== -->
-    <section class="filter-bar mb-4 sm:mb-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <!-- 账号选择 -->
+  <main class="container">
+    <!-- 筛选区域 -->
+    <section class="filter-bar">
+      <div class="filter-top">
+        <span class="filter-title">🎛 数据筛选</span>
+        <span class="badge" :class="{'mock':!importedCount}">
+          {{ importedCount ? '✅ 已导入真实数据（' + importedCount + ' 条）' : '🧪 模拟数据（演示）' }}
+        </span>
+      </div>
+      <div class="filter-grid">
         <div>
-          <label class="filter-label">选择账号</label>
-          <select v-model="selectedAccount" @change="updateCharts"
-                  class="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2.5 text-sm font-medium outline-none focus:ring-2 focus:ring-purple-300 transition">
+          <label class="field-label">选择账号</label>
+          <select class="select" v-model="selectedAccount" @change="updateCharts">
             <option value="all">整个 Team 汇总</option>
-            <option v-for="acc in currentAccounts" :value="acc">{{ acc }}</option>
+            <option v-for="acc in currentAccounts" :key="acc" :value="acc">{{ acc }}</option>
           </select>
         </div>
-        <!-- 时间快捷选择 -->
         <div>
-          <label class="filter-label">时间范围</label>
+          <label class="field-label">时间范围</label>
           <div class="filter-group">
-            <button v-for="opt in timeQuickOptions" :key="opt.value"
-                    @click="selectTimeRange(opt.value)"
-                    :class="['btn-press filter-chip', timeMode === opt.value ? 'active' : '']">
-              {{ opt.label }}
-            </button>
+            <button v-for="opt in timeQuickOptions.slice(0,3)" :key="opt.value"
+                    class="chip" :class="{'chip-active':timeMode===opt.value}" @click="selectTimeRange(opt.value)">{{ opt.label }}</button>
+            <button class="chip" :class="{'chip-active':timeMode==='custom'}" @click="selectTimeRange('custom')">自定义</button>
+          </div>
+          <div class="date-row" v-if="timeMode==='custom'">
+            <div class="date-wrap" :class="{'date-wrap-open':openPicker==='start'}">
+              <div class="date-field" :class="{'date-field-active':openPicker==='start'}" @click="openPickerFor('start')">
+                <svg class="date-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                <span :class="{'date-placeholder':!customStart}">{{ customStart || '开始日期' }}</span>
+              </div>
+              <div class="date-pop" v-if="openPicker==='start'" @click.stop>
+                <div class="cal-head"><button class="cal-nav" @click="movePicker(-1)">‹</button><span class="cal-title">{{ pickerView.year }} 年 {{ pickerView.month+1 }} 月</span><button class="cal-nav" @click="movePicker(1)">›</button></div>
+                <div class="cal-grid cal-week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+                <div class="cal-grid"><span v-for="c in pickerDays" :key="c.dateStr" class="cal-cell" :class="{'cal-other':c.other,'cal-today':c.isToday,'cal-sel':isSel('start',c.dateStr)}" @click="selectDate('start',c.dateStr)">{{ c.d }}</span></div>
+              </div>
+            </div>
+            <span class="date-sep">~</span>
+            <div class="date-wrap" :class="{'date-wrap-open':openPicker==='end'}">
+              <div class="date-field" :class="{'date-field-active':openPicker==='end'}" @click="openPickerFor('end')">
+                <svg class="date-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+                <span :class="{'date-placeholder':!customEnd}">{{ customEnd || '结束日期' }}</span>
+              </div>
+              <div class="date-pop" v-if="openPicker==='end'" @click.stop>
+                <div class="cal-head"><button class="cal-nav" @click="movePicker(-1)">‹</button><span class="cal-title">{{ pickerView.year }} 年 {{ pickerView.month+1 }} 月</span><button class="cal-nav" @click="movePicker(1)">›</button></div>
+                <div class="cal-grid cal-week"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+                <div class="cal-grid"><span v-for="c in pickerDays" :key="c.dateStr" class="cal-cell" :class="{'cal-other':c.other,'cal-today':c.isToday,'cal-sel':isSel('end',c.dateStr)}" @click="selectDate('end',c.dateStr)">{{ c.d }}</span></div>
+              </div>
+            </div>
           </div>
         </div>
-        <!-- 时间维度 -->
         <div>
-          <label class="filter-label">时间维度</label>
-          <div class="filter-group">
+          <label class="field-label">时间维度</label>
+          <div class="dim-group">
             <button v-for="dim in timeDimensions" :key="dim.value"
-                    @click="timeDimension = dim.value; updateCharts()"
-                    :class="['btn-press dim-chip', timeDimension === dim.value ? 'active' : '']">
-              {{ dim.label }}
-            </button>
-          </div>
-        </div>
-        <!-- 自定义日期 -->
-        <div v-if="timeMode === 'custom'" class="lg:col-span-1">
-          <label class="filter-label">自定义日期</label>
-          <div class="flex gap-2">
-            <input type="date" v-model="customStart" @change="updateCharts"
-                   class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-2 py-2 text-xs outline-none focus:ring-2 focus:ring-purple-300">
-            <input type="date" v-model="customEnd" @change="updateCharts"
-                   class="flex-1 bg-gray-50 border border-gray-200 rounded-xl px-2 py-2 text-xs outline-none focus:ring-2 focus:ring-purple-300">
+                    class="dim-chip" :class="{'dim-active':timeDimension===dim.value}" @click="timeDimension=dim.value;updateCharts()">{{ dim.label }}</button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== KPI 指标卡片 ===== -->
-    <section class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-      <!-- GMV 大卡�� -->
-      <div class="md:col-span-2 grad-gmv rounded-2xl p-5 sm:p-6 text-white shadow-lg">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-sm opacity-90">总成交金额 GMV</p>
-            <p class="text-3xl sm:text-4xl font-bold mt-2">{{ formatNumber(filteredMetrics.totalGmv) }}</p>
-            <p class="text-xs opacity-75 mt-1">元</p>
-          </div>
-          <span class="text-4xl opacity-30">&#x1F4B0;</span>
-        </div>
-      </div>
-      <!-- 广告消耗 -->
-      <div class="grad-blue rounded-2xl p-4 sm:p-5 text-white shadow-md">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-xs opacity-80">广告消耗</p>
-            <p class="text-xl sm:text-2xl font-bold mt-1">{{ formatNumber(filteredMetrics.totalCost) }}</p>
-          </div>
-          <span class="text-2xl opacity-30">&#x1F4B2;</span>
-        </div>
-        <p class="text-xs opacity-60 mt-2">元</p>
-      </div>
-      <!-- 预估佣金 -->
-      <div class="grad-orange rounded-2xl p-4 sm:p-5 text-white shadow-md">
-        <div class="flex items-center justify-between">
-          <div>
-            <p class="text-xs opacity-80">预估佣金</p>
-            <p class="text-xl sm:text-2xl font-bold mt-1">{{ formatNumber(filteredMetrics.totalCommission) }}</p>
-          </div>
-          <span class="text-2xl opacity-30">&#x1F4E6;</span>
-        </div>
-        <p class="text-xs opacity-60 mt-2">元</p>
-      </div>
-    </section>
-
-    <!-- ===== 第二行：图表 + 订单明细 ===== -->
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 mb-4 sm:mb-6">
-      <!-- 左侧：环形图 -->
-      <div class="lg:col-span-1 bg-white rounded-2xl p-4 sm:p-5 shadow-sm">
-        <h3 class="font-bold text-base mb-4 flex items-center gap-2">
-          <span>&#x1F4C8;</span> 账号 GMV 占比
-        </h3>
-        <div class="chart-container" style="max-height: 220px;">
-          <canvas ref="donutChartRef"></canvas>
-        </div>
-        <div class="mt-4 space-y-2">
-          <div v-for="(item, idx) in donutLegend" :key="idx" class="flex items-center justify-between text-sm py-1.5 border-b border-gray-50 last:border-0">
-            <div class="flex items-center gap-2">
-              <span class="w-3 h-3 rounded-full" :style="{ backgroundColor: item.color }"></span>
-              <span class="text-gray-700 text-xs">{{ item.name }}</span>
-            </div>
-            <div class="text-right">
-              <span class="font-semibold text-gray-800 text-xs">{{ item.percent }}%</span>
-              <span class="text-xs text-gray-400 ml-1">({{ formatNumber(item.value) }})</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 中间：折线图 -->
-      <div class="lg:col-span-2 bg-white rounded-2xl p-4 sm:p-5 shadow-sm">
-        <h3 class="font-bold text-base mb-4 flex items-center gap-2">
-          <span>&#x1F4C9;</span> 消耗 &amp; 佣金趋势
-        </h3>
-        <div class="chart-container" style="height: 280px;">
-          <canvas ref="lineChartRef"></canvas>
+    <!-- KPI 指标卡片 -->
+    <section class="kpi-grid">
+      <div class="kpi-card" v-for="item in kpis" :key="item.key" :class="[item.grad, {'kpi-gmv':item.key==='gmv'}]">
+        <div class="kpi-label"><span>{{ item.icon }}</span>{{ item.label }}</div>
+        <div class="kpi-value">{{ item.value }}</div>
+        <div class="kpi-foot">
+          <span>较上期</span>
+          <span class="kpi-delta" :class="item.goodClass">{{ item.arrow }} {{ item.pctText }}</span>
         </div>
       </div>
     </section>
 
-    <!-- ===== 第三行：订单明细 + 账号对比 ===== -->
-    <section class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-6">
-      <!-- 订单明细 -->
-      <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm">
-        <div class="flex items-center justify-between mb-4">
-          <h3 class="font-bold text-base flex items-center gap-2"><span>&#x1F6D2;</span> 商品订单明细</h3>
-          <span class="text-xs text-gray-400">Top {{ orderDetails.length }}</span>
-        </div>
-        <div class="space-y-2">
-          <div v-for="(item, idx) in orderDetails" :key="idx"
-               class="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition cursor-pointer">
-            <span :class="['w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white flex-shrink-0',
-                           idx === 0 ? 'grad-blue' : idx === 1 ? 'grad-orange' : idx === 2 ? 'grad-green' : 'bg-gray-300']">
-              {{ idx + 1 }}
-            </span>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2">
-                <span class="text-sm font-semibold text-gray-800 truncate">{{ item.productName }}</span>
-                <span v-if="item.tag" :class="['text-xs px-2 py-0.5 rounded-full font-medium', tagClass(item.tag)]">{{ item.tag }}</span>
-              </div>
-              <p class="text-xs text-gray-400 mt-0.5">ID: {{ item.productId }}</p>
+    <!-- 图表行：环形图 + 折线图 -->
+    <section class="row-3-1">
+      <div class="panel">
+        <h3 class="panel-title"><span>🍩</span> 账号 GMV 占比</h3>
+        <div class="chart-wrap donut-wrap"><canvas ref="donutChartRef"></canvas></div>
+        <div class="legend">
+          <div class="legend-row" v-for="(l,idx) in donutLegend" :key="idx">
+            <div class="legend-left">
+              <span class="legend-dot" :style="{backgroundColor:l.color}"></span>
+              <span class="legend-name">{{ l.name }}</span>
             </div>
-            <div class="text-right flex-shrink-0">
-              <p class="text-sm font-bold text-gray-800">{{ formatNumber(item.amount) }}</p>
-              <p class="text-xs text-gray-400">{{ item.orderCount }} 单</p>
+            <div>
+              <span class="legend-val">{{ formatNumber(l.value) }}</span>
+              <span class="legend-pct">{{ l.percent }}%</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 账号对比 -->
-      <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm">
-        <h3 class="font-bold text-base mb-4 flex items-center gap-2"><span>&#x1F4CB;</span> 账号数据对比</h3>
-        <div class="space-y-4">
-          <div v-for="ad in accountComparison" :key="ad.name" class="p-4 rounded-xl bg-gray-50">
-            <div class="flex items-center justify-between mb-3">
-              <span class="font-semibold text-sm text-gray-800">{{ ad.name }}</span>
-              <span class="text-sm font-bold text-purple-600">{{ formatNumber(ad.gmv) }} 元</span>
+      <div class="panel">
+        <h3 class="panel-title"><span>📈</span> 消耗 &amp; 佣金趋势</h3>
+        <div class="chart-wrap line-wrap"><canvas ref="lineChartRef"></canvas></div>
+      </div>
+    </section>
+
+    <!-- 订单明细 + 账号对比 -->
+    <section class="row-2">
+      <div class="panel">
+        <div class="filter-top" style="margin-bottom:16px;">
+          <h3 class="panel-title" style="margin:0;"><span>🛒</span> 商品订单明细</h3>
+          <span class="badge mock">Top {{ orderDetails.length }}</span>
+        </div>
+        <div class="list">
+          <div class="list-item" v-for="(item,idx) in orderDetails" :key="idx">
+            <span class="rank" :class="['rank-1','rank-2','rank-3'][idx] || ''">{{ idx+1 }}</span>
+            <div class="item-thumb" :title="item.productUrl?'点击查看商品':'预留商品图片位置，可配置商品链接'" @click="openProduct(item)">
+              <img v-if="item.productImg" :src="item.productImg" :alt="item.productName" loading="lazy">
+              <svg v-else viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
             </div>
-            <!-- GMV 进度条 -->
-            <div class="mb-3">
-              <div class="flex justify-between text-xs text-gray-500 mb-1">
-                <span>GMV 贡献</span>
-                <span>{{ (ad.barWidth).toFixed(0) }}%</span>
+            <div class="item-main">
+              <div class="item-name">
+                <span>{{ item.productName }}</span>
+                <span v-if="item.tag" class="tag" :class="tagClass(item.tag)">{{ item.tag }}</span>
               </div>
-              <div class="w-full bg-gray-200 rounded-full h-2.5">
-                <div class="h-2.5 rounded-full transition-all duration-500" :style="{ width: ad.barWidth + '%', backgroundColor: ad.color }"></div>
-              </div>
+              <p class="item-id item-id-link" @click="copyId(item.productId)" title="点击复制商品ID">
+                ID: {{ item.productId }}<span class="copy-tag">复制</span>
+              </p>
             </div>
-            <!-- 消耗和佣金 -->
-            <div class="grid grid-cols-2 gap-3">
-              <div class="bg-white rounded-lg p-2 text-center">
-                <p class="text-xs text-gray-400">广告消耗</p>
-                <p class="text-sm font-bold text-gray-700 mt-0.5">{{ formatNumber(ad.cost) }}</p>
-              </div>
-              <div class="bg-white rounded-lg p-2 text-center">
-                <p class="text-xs text-gray-400">预估佣金</p>
-                <p class="text-sm font-bold text-gray-700 mt-0.5">{{ formatNumber(ad.commission) }}</p>
-              </div>
+            <div class="item-amt">
+              <div class="v">{{ formatNumber(item.amount) }}</div>
+              <div class="o">{{ item.orderCount }} 单</div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h3 class="panel-title"><span>📊</span> 账号数据对比</h3>
+        <div v-for="ad in accountComparison" :key="ad.name" class="acc-card">
+          <div class="acc-head">
+            <span class="acc-name">{{ ad.name }}</span>
+            <span class="acc-gmv">{{ formatNumber(ad.gmv) }} 元</span>
+          </div>
+          <div class="acc-label"><span>GMV 贡献</span><span>{{ ad.barWidth.toFixed(0) }}%</span></div>
+          <div class="acc-bar"><div class="acc-fill" :style="{width:ad.barWidth+'%',backgroundColor:ad.color}"></div></div>
+          <div class="acc-stats">
+            <div class="stat"><div class="stat-label">广告消耗</div><div class="stat-val">{{ formatNumber(ad.cost) }}</div></div>
+            <div class="stat"><div class="stat-label">预估佣金</div><div class="stat-val">{{ formatNumber(ad.commission) }}</div></div>
+            <div class="stat"><div class="stat-label">投产比</div><div class="stat-val">{{ ad.roi.toFixed(2) }}</div></div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- ===== 底部信息 ===== -->
-    <footer class="text-center py-4 text-xs text-gray-400">
-      <p>数据更新于 {{ currentDate }} · 模拟数据仅供演示</p>
-      <p class="mt-1">达人电商数据看板 v2.0</p>
+    <footer class="footer">
+      <p v-if="importedCount">数据导入于 {{ importedAtText }} · 共 {{ importedCount }} 条投放记录</p>
+      <p v-else>数据更新于 {{ currentDate }} · 模拟数据仅供演示</p>
+      <p>达人电商数据看板 v3.1</p>
     </footer>
   </main>
-</div><script>
+
+  <!-- 导入弹窗 -->
+  <div class="modal-overlay" v-if="showImport" @click.self="closeImport">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 class="modal-title">⬆ 导入真实数据</h3>
+        <button class="modal-close" @click="closeImport">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="import-row">
+          <label class="field-label">导入到团队</label>
+          <select class="select" v-model="importTeam">
+            <option value="TeamA">🌸 小老妹（TeamA）</option>
+            <option value="TeamB">⚡ 高子（TeamB）</option>
+          </select>
+        </div>
+        <div class="import-row">
+          <label class="field-label">每日投放数据（必填）</label>
+          <div class="dropzone" @click="$refs.dailyInput.click()">
+            <div class="dz-icon">📄</div>
+            <div class="dz-text">点击选择 CSV 文件</div>
+            <div class="dz-hint">需包含：日期、账号、广告消耗、预估佣金、GMV、订单数</div>
+            <div class="file-name" v-if="dailyFileName">✓ {{ dailyFileName }}</div>
+          </div>
+          <input type="file" accept=".csv,.txt" ref="dailyInput" style="display:none" @change="onDailyFile">
+          <span class="tmpl-link" @click="downloadTemplate('daily')">下载投放数据模板</span>
+        </div>
+        <div class="import-row">
+          <label class="field-label">商品订单数据（可选）</label>
+          <div class="dropzone" @click="$refs.ordersInput.click()">
+            <div class="dz-icon">🛍</div>
+            <div class="dz-text">点击选择 CSV 文件</div>
+            <div class="dz-hint">需包含：日期、账号、商品名称、订单数、金额（商品ID/标签可选）</div>
+            <div class="file-name" v-if="ordersFileName">✓ {{ ordersFileName }}</div>
+          </div>
+          <input type="file" accept=".csv,.txt" ref="ordersInput" style="display:none" @change="onOrdersFile">
+          <span class="tmpl-link" @click="downloadTemplate('orders')">下载商品订单模板</span>
+        </div>
+        <div class="err-msg" v-if="importError">{{ importError }}</div>
+        <div class="modal-actions">
+          <button class="btn-ghost" @click="resetToMock">恢复模拟</button>
+          <button class="btn-primary" @click="doImport">开始导入</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="picker-backdrop" v-if="openPicker" @click="closePicker"></div>
+  <div class="toast" v-if="toastMsg">{{ toastMsg }}</div>
+</div>
+
+<script src="libs/vue.global.prod.js"></script>
+<script src="libs/chart.umd.min.js"></script>
+<script>
 const { createApp, ref, computed, onMounted, watch, nextTick } = Vue;
 createApp({ setup() {
-  // === 生成最近N天的日期 ===
-  function generateDates(days) {
-    const dates = [];
-    const today = new Date();
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date(today); d.setDate(d.getDate() - i);
-      dates.push(d.toISOString().split('T')[0]);
-    }
+  /* ============ 模拟数据生成 ============ */
+  function generateDates(days){
+    const dates=[]; const today=new Date();
+    for(let i=days-1;i>=0;i--){ const d=new Date(today); d.setDate(d.getDate()-i); dates.push(d.toISOString().split('T')[0]); }
     return dates;
   }
-  let seed = 42;
-  function rand(min, max) {
-    seed = (seed * 16807) % 2147483647;
-    return Math.floor(min + (seed / 2147483647) * (max - min));
-  }
-  function generateDailyMetrics(accounts, dates) {
-    const data = [];
-    accounts.forEach(acc => {
-      const bc = (acc === '周浩' || acc === '高') ? 2000 : 1500;
-      dates.forEach(date => {
-        const cost = rand(bc, bc + 1500);
-        const commission = Math.round(cost * (0.3 + rand(0, 30) / 100));
-        const gmv = Math.round(cost * (8 + rand(0, 50) / 10));
-        const orders = Math.max(1, Math.round(gmv / (rand(80, 150))));
-        data.push({ date, account: acc, cost, commission, gmv, orders });
+  let seed=42;
+  function rand(min,max){ seed=(seed*16807)%2147483647; return Math.floor(min+(seed/2147483647)*(max-min)); }
+  function generateDailyMetrics(accounts,dates){
+    const data=[];
+    accounts.forEach(acc=>{
+      const bc=(acc==='周浩'||acc==='高')?2000:1500;
+      dates.forEach(date=>{
+        const cost=rand(bc,bc+1500);
+        const commission=Math.round(cost*(0.3+rand(0,30)/100));
+        const gmv=Math.round(cost*(8+rand(0,50)/10));
+        const orders=Math.max(1,Math.round(gmv/(rand(80,150))));
+        data.push({date,account:acc,cost,commission,gmv,orders});
       });
     });
     return data;
   }
-  const products = [
-    { name: '夏季透气运动鞋', pid: 'SP001', tag: '爆款' },
-    { name: '纯棉休闲T恤', pid: 'SP002', tag: '爆款' },
-    { name: '女士防晒外套', pid: 'SP003', tag: '新品' },
-    { name: '儿童益智玩具', pid: 'SP004', tag: '引流' },
-    { name: '厨房收纳套装', pid: 'SP005', tag: '' },
-    { name: '男士皮带钱包套装', pid: 'SP006', tag: '爆款' },
-    { name: '网红零食大礼包', pid: 'SP007', tag: '引流' },
-    { name: '家用空气净化器', pid: 'SP008', tag: '新品' },
-    { name: '运动健身手环', pid: 'SP009', tag: '' },
-    { name: '秋冬保暖内衣', pid: 'SP010', tag: '预售' },
+  const products=[
+    {name:'夏季透气运动鞋',pid:'SP001',tag:'爆款',img:'',url:''},
+    {name:'纯棉休闲T恤',pid:'SP002',tag:'爆款',img:'',url:''},
+    {name:'女士防晒外套',pid:'SP003',tag:'新品',img:'',url:''},
+    {name:'儿童益智玩具',pid:'SP004',tag:'引流',img:'',url:''},
+    {name:'厨房收纳套装',pid:'SP005',tag:'',img:'',url:''},
+    {name:'男士皮带钱包套装',pid:'SP006',tag:'爆款',img:'',url:''},
+    {name:'网红零食大礼包',pid:'SP007',tag:'引流',img:'',url:''},
+    {name:'家用空气净化器',pid:'SP008',tag:'新品',img:'',url:''},
+    {name:'运动健身手环',pid:'SP009',tag:'',img:'',url:''},
+    {name:'秋冬保暖内衣',pid:'SP010',tag:'预售',img:'',url:''},
   ];
-  function generateOrderDetails(accounts, dates) {
-    const details = [];
-    dates.slice(-7).forEach(date => {
-      accounts.forEach(acc => {
-        const count = rand(2, 5);
-        const used = new Set();
-        for (let i = 0; i < count; i++) {
-          let idx; do { idx = rand(0, products.length - 1); } while (used.has(idx));
-          used.add(idx);
-          const p = products[idx];
-          const oc = rand(5, 80);
-          details.push({ date, account: acc, productName: p.name, productId: p.pid, orderCount: oc, amount: oc * rand(29, 299), tag: p.tag });
+  function generateOrderDetails(accounts,dates){
+    const details=[];
+    dates.slice(-7).forEach(date=>{
+      accounts.forEach(acc=>{
+        const count=rand(2,5); const used=new Set();
+        for(let i=0;i<count;i++){
+          let idx; do{ idx=rand(0,products.length-1); }while(used.has(idx)); used.add(idx);
+          const p=products[idx]; const oc=rand(5,80);
+          details.push({date,account:acc,productName:p.name,productId:p.pid,orderCount:oc,amount:oc*rand(29,299),tag:p.tag,productImg:p.img||'',productUrl:p.url||''});
         }
       });
     });
     return details;
   }
-  const allDates = generateDates(30);
-  const teamAAccounts = ['周浩', '豫东小老妹', '小周周'];
-  const teamADaily = generateDailyMetrics(teamAAccounts, allDates);
-  const teamAOrders = generateOrderDetails(teamAAccounts, allDates);
-  const teamBAccounts = ['高', '高高白喝了', '钢蹦爸爸（豫东小老弟）'];
-  const teamBDaily = generateDailyMetrics(teamBAccounts, allDates);
-  const teamBOrders = generateOrderDetails(teamBAccounts, allDates);
-  const selectedTeam = ref('TeamA');
-  const selectedAccount = ref('all');
-  const timeMode = ref('last7');
-  const timeDimension = ref('day');
-  const customStart = ref('');
-  const customEnd = ref('');
-  const currentDate = ref(new Date().toLocaleString('zh-CN'));
-  const donutChartRef = ref(null);
-  const lineChartRef = ref(null);
-  let donutChartInstance = null;
-  let lineChartInstance = null;
-  const timeQuickOptions = [
-    { label: '昨天', value: 'yesterday' },
-    { label: '最近7天', value: 'last7' },
-    { label: '最近30天', value: 'last30' },
-    { label: '自定义', value: 'custom' },
+  const allDates=generateDates(30);
+  const teamAAccounts=['周浩','豫东小老妹','小周周'];
+  const teamADaily=generateDailyMetrics(teamAAccounts,allDates);
+  const teamAOrders=generateOrderDetails(teamAAccounts,allDates);
+  const teamBAccounts=['高','高高白喝了','钢蹦爸爸（豫东小老弟）'];
+  const teamBDaily=generateDailyMetrics(teamBAccounts,allDates);
+  const teamBOrders=generateOrderDetails(teamBAccounts,allDates);
+
+  /* ============ 响应式状态 ============ */
+  const selectedTeam=ref('TeamA');
+  const selectedAccount=ref('all');
+  const timeMode=ref('last7');
+  const timeDimension=ref('day');
+  const customStart=ref('');
+  const customEnd=ref('');
+  /* 自定义日期选择器 */
+  const openPicker=ref(null);
+  const pickerView=ref({year:new Date().getFullYear(),month:new Date().getMonth()});
+  const todayStr=(()=>{ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); })();
+  function fmtDateObj(dt){ return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0'); }
+  const pickerDays=computed(()=>{
+    const {year,month}=pickerView.value;
+    const first=new Date(year,month,1);
+    const startDow=(first.getDay()+6)%7;
+    const gridStart=new Date(year,month,1-startDow);
+    const cells=[];
+    for(let i=0;i<42;i++){ const dt=new Date(gridStart); dt.setDate(gridStart.getDate()+i);
+      cells.push({d:dt.getDate(), other:(dt.getMonth()!==month), dateStr:fmtDateObj(dt), isToday:(fmtDateObj(dt)===todayStr)}); }
+    return cells;
+  });
+  function openPickerFor(which){
+    if(openPicker.value===which){ openPicker.value=null; return; }
+    const cur=which==='start'?customStart.value:customEnd.value;
+    if(cur){ const [y,m]=cur.split('-'); pickerView.value={year:+y,month:+m-1}; }
+    else { const t=new Date(); pickerView.value={year:t.getFullYear(),month:t.getMonth()}; }
+    openPicker.value=which;
+  }
+  function closePicker(){ openPicker.value=null; }
+  function movePicker(delta){ let {year,month}=pickerView.value; month+=delta; if(month<0){month=11;year--;} else if(month>11){month=0;year++;} pickerView.value={year,month}; }
+  function isSel(which,ds){ return (which==='start'?customStart.value:customEnd.value)===ds; }
+  function selectDate(which,ds){
+    if(which==='start'){ customStart.value=ds; if(customEnd.value&&ds>customEnd.value) customEnd.value=ds; }
+    else { customEnd.value=ds; if(customStart.value&&ds<customStart.value) customStart.value=ds; }
+    openPicker.value=null;
+  }
+  const currentDate=ref(new Date().toLocaleString('zh-CN'));
+  const loading=ref(true);
+  const importedData=ref({TeamA:null,TeamB:null});
+  const donutChartRef=ref(null);
+  const lineChartRef=ref(null);
+  let donutChartInstance=null, lineChartInstance=null, donutCenterTotal=0;
+
+  const timeQuickOptions=[
+    {label:'昨天',value:'yesterday'},
+    {label:'最近7天',value:'last7'},
+    {label:'最近30天',value:'last30'},
+    {label:'自定义',value:'custom'},
   ];
-  const timeDimensions = [
-    { label: '按天', value: 'day' },
-    { label: '按周', value: 'week' },
-    { label: '按月', value: 'month' },
+  const timeDimensions=[
+    {label:'按天',value:'day'},
+    {label:'按周',value:'week'},
+    {label:'按月',value:'month'},
   ];
-  const chartColors = ['#FFB3BA', '#BAFFC9', '#BAE1FF', '#FFFFBA', '#E8BAFF', '#FFD4BA'];
-  // === 计算属性 ===
-  const currentAccounts = computed(() => selectedTeam.value === 'TeamA' ? teamAAccounts : teamBAccounts);
-  const currentDailyData = computed(() => selectedTeam.value === 'TeamA' ? teamADaily : teamBDaily);
-  const currentOrderData = computed(() => selectedTeam.value === 'TeamA' ? teamAOrders : teamBOrders);
-  function getFilteredDates() {
-    switch (timeMode.value) {
-      case 'yesterday': return [allDates[allDates.length - 2]];
-      case 'last7': return allDates.slice(-7);
-      case 'last30': return [...allDates];
+  const chartColors=['#6366F1','#EC4899','#14B8A6','#F59E0B','#3B82F6','#8B5CF6','#EF4444','#10B981'];
+
+  /* ============ 数据来源切换 ============ */
+  const activeDaily=computed(()=>{
+    const t=selectedTeam.value; const imp=importedData.value[t];
+    return imp?imp.daily:(t==='TeamA'?teamADaily:teamBDaily);
+  });
+  const activeOrders=computed(()=>{
+    const t=selectedTeam.value; const imp=importedData.value[t];
+    return imp?imp.orders:(t==='TeamA'?teamAOrders:teamBOrders);
+  });
+  const currentAccounts=computed(()=>{
+    const t=selectedTeam.value; const imp=importedData.value[t];
+    const src=imp?imp.daily:(t==='TeamA'?teamADaily:teamBDaily);
+    return [...new Set(src.map(d=>d.account))];
+  });
+  function getActiveDates(){
+    const t=selectedTeam.value; const imp=importedData.value[t];
+    const src=imp?imp.daily:(t==='TeamA'?teamADaily:teamBDaily);
+    return [...new Set(src.map(d=>d.date))].sort();
+  }
+
+  /* ============ 筛选日期 ============ */
+  function getFilteredDates(){
+    const active=getActiveDates();
+    switch(timeMode.value){
+      case 'yesterday': return active.length>=2?[active[active.length-2]]:active.slice(-1);
+      case 'last7': return active.slice(-7);
+      case 'last30': return [...active];
       case 'custom':
-        if (customStart.value && customEnd.value) return allDates.filter(d => d >= customStart.value && d <= customEnd.value);
-        return allDates.slice(-7);
-      default: return allDates.slice(-7);
+        if(customStart.value&&customEnd.value) return active.filter(d=>d>=customStart.value&&d<=customEnd.value);
+        return active.slice(-7);
+      default: return active.slice(-7);
     }
   }
-  const filteredMetrics = computed(() => {
-    const dates = getFilteredDates();
-    let data = currentDailyData.value.filter(d => dates.includes(d.date));
-    if (selectedAccount.value !== 'all') data = data.filter(d => d.account === selectedAccount.value);
-    return { totalCost: data.reduce((s, d) => s + d.cost, 0), totalCommission: data.reduce((s, d) => s + d.commission, 0), totalGmv: data.reduce((s, d) => s + d.gmv, 0), totalOrders: data.reduce((s, d) => s + d.orders, 0), rawData: data };
+  function getPreviousDates(){
+    const active=getActiveDates(); const cur=getFilteredDates();
+    if(cur.length===0) return [];
+    const idx=active.indexOf(cur[0]);
+    if(idx<=0) return [];
+    return active.slice(Math.max(0,idx-cur.length),idx);
+  }
+  function getFilteredDaily(){
+    const dates=getFilteredDates();
+    let data=activeDaily.value.filter(d=>dates.includes(d.date));
+    if(selectedAccount.value!=='all') data=data.filter(d=>d.account===selectedAccount.value);
+    return data;
+  }
+  function getFilteredOrders(){
+    const dates=getFilteredDates();
+    let data=activeOrders.value.filter(d=>dates.includes(d.date));
+    if(selectedAccount.value!=='all') data=data.filter(d=>d.account===selectedAccount.value);
+    return data;
+  }
+
+  /* ============ 指标计算 ============ */
+  function computeMetrics(dates){
+    let data=activeDaily.value.filter(d=>dates.includes(d.date));
+    if(selectedAccount.value!=='all') data=data.filter(d=>d.account===selectedAccount.value);
+    const cost=data.reduce((s,d)=>s+d.cost,0);
+    const commission=data.reduce((s,d)=>s+d.commission,0);
+    const gmv=data.reduce((s,d)=>s+d.gmv,0);
+    const orders=data.reduce((s,d)=>s+d.orders,0);
+    return {cost,commission,gmv,orders,roi:cost>0?gmv/cost:0,profit:commission-cost,aov:orders>0?gmv/orders:0};
+  }
+  const filteredMetrics=computed(()=>{
+    const data=getFilteredDaily();
+    return {totalCost:data.reduce((s,d)=>s+d.cost,0),totalCommission:data.reduce((s,d)=>s+d.commission,0),
+      totalGmv:data.reduce((s,d)=>s+d.gmv,0),totalOrders:data.reduce((s,d)=>s+d.orders,0),rawData:data};
   });
-  const orderDetails = computed(() => {
-    const dates = getFilteredDates();
-    let data = currentOrderData.value.filter(d => dates.includes(d.date));
-    if (selectedAccount.value !== 'all') data = data.filter(d => d.account === selectedAccount.value);
-    const agg = {};
-    data.forEach(d => { const k = d.productName + '|' + d.productId; if (!agg[k]) agg[k] = { ...d, orderCount: 0, amount: 0 }; agg[k].orderCount += d.orderCount; agg[k].amount += d.amount; });
-    return Object.values(agg).sort((a, b) => b.amount - a.amount).slice(0, 10);
+  const kpis=computed(()=>{
+    const cur=computeMetrics(getFilteredDates());
+    const prev=computeMetrics(getPreviousDates());
+    const cfg=[
+      {key:'gmv',label:'总成交金额 GMV',icon:'💰',grad:'grad-gmv',betterUp:true,fmt:v=>formatNumber(v),raw:cur.gmv},
+      {key:'cost',label:'广告消耗',icon:'💸',grad:'grad-blue',betterUp:false,fmt:v=>formatNumber(v),raw:cur.cost},
+      {key:'commission',label:'预估佣金',icon:'📦',grad:'grad-orange',betterUp:true,fmt:v=>formatNumber(v),raw:cur.commission},
+      {key:'roi',label:'投产比 ROI',icon:'📈',grad:'grad-purple',betterUp:true,fmt:v=>v.toFixed(2),raw:cur.roi},
+      {key:'profit',label:'预估利润',icon:'🧮',grad:'grad-teal',betterUp:true,fmt:v=>formatCurrency(v),raw:cur.profit},
+      {key:'aov',label:'客单价',icon:'🛒',grad:'grad-amber',betterUp:true,fmt:v=>formatNumber(v),raw:cur.aov},
+      {key:'orders',label:'订单数',icon:'🧾',grad:'grad-indigo',betterUp:true,fmt:v=>Math.round(v).toLocaleString('zh-CN'),raw:cur.orders},
+    ];
+    return cfg.map(c=>{
+      const prevV=prev[c.key]; const delta=c.raw-prevV;
+      let pct=null; if(prevV!==0&&isFinite(prevV)&&prevV!=null) pct=(delta/prevV)*100;
+      const good=c.betterUp?(delta>=0):(delta<=0);
+      const arrow=pct==null?'–':(delta>0?'▲':delta<0?'▼':'–');
+      const pctText=pct==null?'—':(pct>=0?'+':'')+pct.toFixed(1)+'%';
+      return {...c,value:c.fmt(c.raw),pctText,arrow,goodClass:pct==null?'':(good?'kpi-up':'kpi-down')};
+    });
   });
-  const donutLegend = computed(() => {
-    const dates = getFilteredDates();
-    let data = currentDailyData.value.filter(d => dates.includes(d.date));
-    if (selectedAccount.value !== 'all') data = data.filter(d => d.account === selectedAccount.value);
-    const ba = {}; data.forEach(d => { ba[d.account] = (ba[d.account] || 0) + d.gmv; });
-    const entries = Object.entries(ba); const total = entries.reduce((s, [, v]) => s + v, 0);
-    return entries.map(([name, value], i) => ({ name, value, percent: total > 0 ? ((value / total) * 100).toFixed(1) : '0.0', color: chartColors[i % chartColors.length] }));
+
+  const orderDetails=computed(()=>{
+    const data=getFilteredOrders();
+    const agg={};
+    data.forEach(d=>{ const k=d.productName+'|'+d.productId;
+      if(!agg[k]) agg[k]={...d,orderCount:0,amount:0};
+      agg[k].orderCount+=d.orderCount; agg[k].amount+=d.amount; });
+    return Object.values(agg).sort((a,b)=>b.amount-a.amount).slice(0,10);
   });
-  const accountComparison = computed(() => {
-    const dates = getFilteredDates();
-    let data = currentDailyData.value.filter(d => dates.includes(d.date));
-    if (selectedAccount.value !== 'all') data = data.filter(d => d.account === selectedAccount.value);
-    const ba = {};
-    data.forEach(d => { if (!ba[d.account]) ba[d.account] = { cost: 0, commission: 0, gmv: 0 }; ba[d.account].cost += d.cost; ba[d.account].commission += d.commission; ba[d.account].gmv += d.gmv; });
-    const entries = Object.entries(ba); const maxGmv = Math.max(...entries.map(([, v]) => v.gmv));
-    const colors = ['#667eea', '#f093fb', '#43e97b'];
-    return entries.map(([name, val], i) => ({ name, cost: val.cost, commission: val.commission, gmv: val.gmv, barWidth: maxGmv > 0 ? (val.gmv / maxGmv * 100) : 0, color: colors[i % colors.length] }));
+  const donutLegend=computed(()=>{
+    const data=getFilteredDaily();
+    const ba={}; data.forEach(d=>{ ba[d.account]=(ba[d.account]||0)+d.gmv; });
+    const entries=Object.entries(ba); const total=entries.reduce((s,[,v])=>s+v,0);
+    return entries.map(([name,value],i)=>({name,value,percent:total>0?((value/total)*100).toFixed(1):'0.0',color:chartColors[i%chartColors.length]}));
   });
-  // 工具函数
-  function formatNumber(n) { if (n >= 10000) return (n / 10000).toFixed(1) + 'w'; if (n >= 1000) return (n / 1000).toFixed(1) + 'k'; return n.toLocaleString(); }
-  function tagClass(tag) { const m = { '爆款': 'bg-red-100 text-red-600', '新品': 'bg-blue-100 text-blue-600', '引流': 'bg-green-100 text-green-600', '预售': 'bg-purple-100 text-purple-600' }; return m[tag] || 'bg-gray-100 text-gray-500'; }
-  // === 折线图更新 ===
-  function updateLineChart() {
-    const dates = getFilteredDates();
-    let labels = [], costData = [], commissionData = [];
-    if (timeDimension.value === 'day') {
-      labels = dates;
-      dates.forEach(date => {
-        const dd = filteredMetrics.value.rawData.filter(d => d.date === date);
-        costData.push(dd.reduce((s, d) => s + d.cost, 0));
-        commissionData.push(dd.reduce((s, d) => s + d.commission, 0));
+  const accountComparison=computed(()=>{
+    const data=getFilteredDaily();
+    const ba={};
+    data.forEach(d=>{ if(!ba[d.account]) ba[d.account]={cost:0,commission:0,gmv:0};
+      ba[d.account].cost+=d.cost; ba[d.account].commission+=d.commission; ba[d.account].gmv+=d.gmv; });
+    const entries=Object.entries(ba); const maxGmv=Math.max(...entries.map(([,v])=>v.gmv),0);
+    const colors=['#6366F1','#EC4899','#14B8A6'];
+    return entries.map(([name,val],i)=>({name,cost:val.cost,commission:val.commission,gmv:val.gmv,
+      roi:val.cost>0?val.gmv/val.cost:0,barWidth:maxGmv>0?(val.gmv/maxGmv*100):0,color:colors[i%colors.length]}));
+  });
+
+  /* ============ 工具函数 ============ */
+  function formatNumber(n){
+    if(n>=1e8) return (n/1e8).toFixed(2)+'亿';
+    if(n>=1e4) return (n/1e4).toFixed(1)+'w';
+    return Math.round(n).toLocaleString('zh-CN');
+  }
+  function formatCurrency(n){ return (n<0?'-':'')+formatNumber(Math.abs(n)); }
+  function tagClass(tag){
+    const m={'爆款':'tag-best','新品':'tag-new','引流':'tag-flow','预售':'tag-pre'};
+    return m[tag]||'tag-none';
+  }
+  /* 商品明细：ID 复制 & 图片/链接直达 */
+  function copyId(id){
+    const text=String(id||''); if(!text) return;
+    const done=()=>toast('已复制：'+text);
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(text).then(done).catch(()=>fallbackCopy(text,done)); }
+    else fallbackCopy(text,done);
+  }
+  function fallbackCopy(text,done){ const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; ta.style.top='0'; document.body.appendChild(ta); ta.focus(); ta.select(); try{ document.execCommand('copy'); done(); }catch(e){ toast('复制失败，请手动复制'); } document.body.removeChild(ta); }
+  function openProduct(item){ if(item&&item.productUrl){ window.open(item.productUrl,'_blank','noopener'); } else { toast('该商品暂未配置链接/图片'); } }
+
+  /* ============ 折线图 ============ */
+  function computeLineData(){
+    const dates=getFilteredDates();
+    let labels=[],costData=[],commissionData=[];
+    const raw=filteredMetrics.value.rawData;
+    if(timeDimension.value==='day'){
+      labels=dates;
+      dates.forEach(date=>{
+        const dd=raw.filter(d=>d.date===date);
+        costData.push(dd.reduce((s,d)=>s+d.cost,0));
+        commissionData.push(dd.reduce((s,d)=>s+d.commission,0));
       });
-    } else if (timeDimension.value === 'week') {
-      const weeks = {};
-      dates.forEach(date => {
-        const d = new Date(date); const dow = d.getDay();
-        const monday = new Date(d); monday.setDate(d.getDate() - dow + (dow === 0 ? -6 : 1));
-        const wk = monday.toISOString().split('T')[0];
-        if (!weeks[wk]) weeks[wk] = { cost: 0, commission: 0, label: '' };
-        const dd = filteredMetrics.value.rawData.filter(x => x.date === date);
-        weeks[wk].cost += dd.reduce((s, x) => s + x.cost, 0);
-        weeks[wk].commission += dd.reduce((s, x) => s + x.commission, 0);
-        weeks[wk].label = wk;
+    } else if(timeDimension.value==='week'){
+      const weeks={};
+      dates.forEach(date=>{
+        const d=new Date(date); const dow=d.getDay();
+        const monday=new Date(d); monday.setDate(d.getDate()-dow+(dow===0?-6:1));
+        const wk=monday.toISOString().split('T')[0];
+        if(!weeks[wk]) weeks[wk]={cost:0,commission:0};
+        const dd=raw.filter(x=>x.date===date);
+        weeks[wk].cost+=dd.reduce((s,x)=>s+x.cost,0);
+        weeks[wk].commission+=dd.reduce((s,x)=>s+x.commission,0);
       });
-      labels = Object.values(weeks).map(w => w.label);
-      costData = Object.values(weeks).map(w => w.cost);
-      commissionData = Object.values(weeks).map(w => w.commission);
-    } else if (timeDimension.value === 'month') {
-      const months = {};
-      dates.forEach(date => {
-        const mk = date.substring(0, 7);
-        if (!months[mk]) months[mk] = { cost: 0, commission: 0, label: '' };
-        const dd = filteredMetrics.value.rawData.filter(x => x.date === date);
-        months[mk].cost += dd.reduce((s, x) => s + x.cost, 0);
-        months[mk].commission += dd.reduce((s, x) => s + x.commission, 0);
-        months[mk].label = mk;
+      labels=Object.keys(weeks);
+      costData=Object.values(weeks).map(w=>w.cost);
+      commissionData=Object.values(weeks).map(w=>w.commission);
+    } else if(timeDimension.value==='month'){
+      const months={};
+      dates.forEach(date=>{
+        const mk=date.substring(0,7);
+        if(!months[mk]) months[mk]={cost:0,commission:0};
+        const dd=raw.filter(x=>x.date===date);
+        months[mk].cost+=dd.reduce((s,x)=>s+x.cost,0);
+        months[mk].commission+=dd.reduce((s,x)=>s+x.commission,0);
       });
-      labels = Object.values(months).map(m => m.label);
-      costData = Object.values(months).map(m => m.cost);
-      commissionData = Object.values(months).map(m => m.commission);
+      labels=Object.keys(months);
+      costData=Object.values(months).map(m=>m.cost);
+      commissionData=Object.values(months).map(m=>m.commission);
     }
-    const ctx = lineChartRef.value.getContext('2d');
-    if (lineChartInstance) lineChartInstance.destroy();
-    const gc = ctx.createLinearGradient(0, 0, 0, 280);
-    gc.addColorStop(0, 'rgba(102,126,234,0.25)'); gc.addColorStop(1, 'rgba(102,126,234,0.0)');
-    const gm = ctx.createLinearGradient(0, 0, 0, 280);
-    gm.addColorStop(0, 'rgba(240,147,251,0.25)'); gm.addColorStop(1, 'rgba(240,147,251,0.0)');
-    lineChartInstance = new Chart(ctx, {
-      type: 'line',
-      data: { labels, datasets: [
-        { label: '广告消耗', data: costData, borderColor: '#667eea', backgroundColor: gc, borderWidth: 2.5, tension: 0.4, fill: true, pointRadius: 3, pointHoverRadius: 6, pointBackgroundColor: '#667eea' },
-        { label: '预估佣金', data: commissionData, borderColor: '#f093fb', backgroundColor: gm, borderWidth: 2.5, tension: 0.4, fill: true, pointRadius: 3, pointHoverRadius: 6, pointBackgroundColor: '#f093fb' }
+    return {labels,costData,commissionData};
+  }
+  function renderLineChart(){
+    const canvas=lineChartRef.value; if(!canvas) return;
+    const ctx=canvas.getContext('2d');
+    const {labels,costData,commissionData}=computeLineData();
+    if(lineChartInstance){
+      lineChartInstance.data.labels=labels;
+      lineChartInstance.data.datasets[0].data=costData;
+      lineChartInstance.data.datasets[1].data=commissionData;
+      lineChartInstance.update();
+      return;
+    }
+    const gc=ctx.createLinearGradient(0,0,0,300);
+    gc.addColorStop(0,'rgba(102,126,234,0.25)'); gc.addColorStop(1,'rgba(102,126,234,0.0)');
+    const gm=ctx.createLinearGradient(0,0,0,300);
+    gm.addColorStop(0,'rgba(240,147,251,0.25)'); gm.addColorStop(1,'rgba(240,147,251,0.0)');
+    lineChartInstance=new Chart(ctx,{
+      type:'line',
+      data:{labels,datasets:[
+        {label:'广告消耗',data:costData,borderColor:'#667eea',backgroundColor:gc,borderWidth:2.5,tension:0.4,fill:true,pointRadius:3,pointHoverRadius:6,pointBackgroundColor:'#667eea'},
+        {label:'预估佣金',data:commissionData,borderColor:'#f093fb',backgroundColor:gm,borderWidth:2.5,tension:0.4,fill:true,pointRadius:3,pointHoverRadius:6,pointBackgroundColor:'#f093fb'},
       ]},
-      options: {
-        responsive: true, maintainAspectRatio: false,
-        plugins: {
-          legend: { display: true, position: 'top', labels: { usePointStyle: true, padding: 15, font: { size: 11 } } },
-          tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', titleFont: { size: 12 }, bodyFont: { size: 12 }, padding: 10, cornerRadius: 8, callbacks: { label: c => ' ' + c.dataset.label + ': \u00A5' + c.parsed.y.toLocaleString() } }
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{display:true,position:'top',labels:{usePointStyle:true,padding:15,font:{size:11}}},
+          tooltip:{backgroundColor:'rgba(0,0,0,0.8)',titleFont:{size:12},bodyFont:{size:12},padding:10,cornerRadius:8,
+            callbacks:{label:c=>' '+c.dataset.label+': ¥'+c.parsed.y.toLocaleString()}},
         },
-        scales: {
-          x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } },
-          y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 10 }, callback: v => formatNumber(v) }, border: { display: false } }
+        scales:{
+          x:{grid:{display:false},ticks:{font:{size:10},maxRotation:45}},
+          y:{grid:{color:'rgba(0,0,0,0.04)'},ticks:{font:{size:10},callback:v=>formatNumber(v)},border:{display:false}},
         },
-        interaction: { mode: 'index', intersect: false }
-      }
-    });
-  }
-  // === 环形图更新 ===
-  function updateDonutChart() {
-    if (donutChartInstance) donutChartInstance.destroy();
-    const ctx = donutChartRef.value.getContext('2d');
-    const legend = donutLegend.value;
-    let labels, values, colors;
-    if (selectedAccount.value !== 'all' && legend.length === 1) {
-      labels = [legend[0].name]; values = [100]; colors = [legend[0].color];
-    } else {
-      labels = legend.map(l => l.name); values = legend.map(l => parseFloat(l.percent)); colors = legend.map(l => l.color);
-    }
-    donutChartInstance = new Chart(ctx, {
-      type: 'doughnut',
-      data: { labels, datasets: [{ data: values, backgroundColor: colors, borderWidth: 0, hoverOffset: 8 }] },
-      options: {
-        responsive: true, maintainAspectRatio: false, cutout: '65%',
-        plugins: {
-          legend: { display: false },
-          tooltip: { backgroundColor: 'rgba(0,0,0,0.8)', padding: 10, cornerRadius: 8, callbacks: { label: c => ' ' + c.label + ': ' + c.parsed + '%' } }
-        }
+        interaction:{mode:'index',intersect:false},
       },
-      plugins: [{
-        id: 'centerText',
-        beforeDraw(chart) {
-          const { ctx: c } = chart; c.restore();
-          const total = legend.reduce((s, l) => s + l.value, 0);
-          c.font = 'bold 16px -apple-system'; c.fillStyle = '#374151';
-          c.textAlign = 'center'; c.textBaseline = 'middle';
-          const cx = (chart.chartArea.left + chart.chartArea.right) / 2;
-          const cy = (chart.chartArea.top + chart.chartArea.bottom) / 2;
-          c.fillText(formatNumber(total), cx, cy - 8);
-          c.font = '11px -apple-system'; c.fillStyle = '#9CA3AF';
-          c.fillText('\u603B GMV', cx, cy + 12);
-          c.save();
-        }
-      }]
     });
   }
-  function updateCharts() { nextTick(() => { updateDonutChart(); updateLineChart(); }); }
-  function onTeamChange() { selectedAccount.value = 'all'; updateCharts(); }
-  function selectTimeRange(mode) {
-    timeMode.value = mode;
-    if (mode === 'custom') {
-      const today = new Date(); const weekAgo = new Date(today); weekAgo.setDate(today.getDate() - 7);
-      customEnd.value = today.toISOString().split('T')[0]; customStart.value = weekAgo.toISOString().split('T')[0];
+
+  /* ============ 环形图 ============ */
+  const centerTextPlugin={
+    id:'centerText',
+    beforeDraw(chart){
+      const c=chart.ctx;
+      const cx=(chart.chartArea.left+chart.chartArea.right)/2;
+      const cy=(chart.chartArea.top+chart.chartArea.bottom)/2;
+      c.textAlign='center'; c.textBaseline='middle';
+      c.font='bold 18px TencentSans, PingFang SC, Microsoft YaHei, sans-serif'; c.fillStyle='#374151';
+      c.fillText(formatNumber(donutCenterTotal),cx,cy-8);
+      c.font='12px TencentSans, PingFang SC, Microsoft YaHei, sans-serif'; c.fillStyle='#9CA3AF';
+      c.fillText('总 GMV',cx,cy+12);
+    },
+  };
+  function renderDonutChart(){
+    const canvas=donutChartRef.value; if(!canvas) return;
+    const ctx=canvas.getContext('2d');
+    const legend=donutLegend.value;
+    donutCenterTotal=legend.reduce((s,l)=>s+l.value,0);
+    let labels,values,colors;
+    if(selectedAccount.value!=='all'&&legend.length===1){ labels=[legend[0].name]; values=[100]; colors=[legend[0].color]; }
+    else { labels=legend.map(l=>l.name); values=legend.map(l=>parseFloat(l.percent)); colors=legend.map(l=>l.color); }
+    if(donutChartInstance){
+      donutChartInstance.data.labels=labels;
+      donutChartInstance.data.datasets[0].data=values;
+      donutChartInstance.data.datasets[0].backgroundColor=colors;
+      donutChartInstance.update();
+      return;
+    }
+    donutChartInstance=new Chart(ctx,{
+      type:'doughnut',
+      data:{labels,datasets:[{data:values,backgroundColor:colors,borderWidth:0,hoverOffset:8}]},
+      options:{
+        responsive:true,maintainAspectRatio:false,cutout:'65%',
+        plugins:{
+          legend:{display:false},
+          tooltip:{backgroundColor:'rgba(0,0,0,0.8)',padding:10,cornerRadius:8,
+            callbacks:{label:c=>' '+c.label+': '+c.parsed+'%'}},
+        },
+      },
+      plugins:[centerTextPlugin],
+    });
+  }
+  function updateCharts(){ nextTick(()=>{ renderDonutChart(); renderLineChart(); }); }
+
+  /* ============ 交互 ============ */
+  function onTeamChange(){ selectedAccount.value='all'; updateCharts(); }
+  function selectTimeRange(mode){
+    timeMode.value=mode;
+    if(mode==='custom'){
+      const today=new Date(); const weekAgo=new Date(today); weekAgo.setDate(today.getDate()-7);
+      customEnd.value=today.toISOString().split('T')[0]; customStart.value=weekAgo.toISOString().split('T')[0];
     }
     updateCharts();
   }
-  onMounted(() => {
-    const today = new Date(); const weekAgo = new Date(today); weekAgo.setDate(today.getDate() - 7);
-    customEnd.value = today.toISOString().split('T')[0]; customStart.value = weekAgo.toISOString().split('T')[0];
+
+  /* ============ 导入：CSV 解析 ============ */
+  function detectDelimiter(text){
+    const first=(text.split(/\r?\n/)[0])||'';
+    if(first.includes('\t')) return '\t';
+    if(first.split(';').length>first.split(',').length) return ';';
+    return ',';
+  }
+  function parseCSV(text){
+    text=(text||'').replace(/^﻿/,'');
+    const delim=detectDelimiter(text);
+    const rows=[]; let i=0,field='',row=[],inQ=false;
+    while(i<text.length){
+      const ch=text[i];
+      if(inQ){
+        if(ch==='"'){ if(text[i+1]==='"'){field+='"';i+=2;continue;} inQ=false;i++;continue; }
+        field+=ch; i++; continue;
+      }
+      if(ch==='"'){ inQ=true; i++; continue; }
+      if(ch===delim){ row.push(field); field=''; i++; continue; }
+      if(ch==='\r'){ i++; continue; }
+      if(ch==='\n'){ row.push(field); rows.push(row); row=[]; field=''; i++; continue; }
+      field+=ch; i++;
+    }
+    if(field.length>0||row.length>0){ row.push(field); rows.push(row); }
+    return rows.filter(r=>r.length>0&&!(r.length===1&&r[0].trim()===''));
+  }
+  function parseNum(s){ if(s==null) return 0; const m=String(s).replace(/[^\d.\-]/g,''); const n=parseFloat(m); return isNaN(n)?0:n; }
+  function normDate(s){
+    if(!s) return '';
+    s=String(s).trim();
+    const parts=s.includes('/')?s.split('/'):s.split('-');
+    if(parts.length<3) return s;
+    let [y,m,d]=parts; if(y.length===2) y='20'+y;
+    return [y.padStart(4,'0'),m.padStart(2,'0'),d.padStart(2,'0')].join('-');
+  }
+  const headerAlias={
+    date:['日期','date','时间','统计日期','day'],
+    account:['账号','account','达人','主播','账户','直播间'],
+    cost:['广告消耗','消耗','cost','花费','投放金额','花费金额','推广费'],
+    commission:['预估佣金','佣金','commission','预估收入','佣金收入'],
+    gmv:['gmv','成交金额','销售额','成交额','成交总额','gmv金额'],
+    orders:['订单数','订单量','orders','订单','成交订单数','成交量'],
+    productName:['商品名称','商品','productname','product','商品名','产品名称'],
+    productId:['商品id','productid','商品编码','货号','商品编号','商品id'],
+    orderCount:['订单数','订单量','数量','qty','件数'],
+    amount:['金额','销售额','amount','成交金额','订单金额','支付金额'],
+    tag:['标签','tag','类型','分类'],
+    productImg:['商品图片','商品图','图片链接','图片','imageurl','img','image'],
+    productUrl:['商品链接','商品url','链接','url','商品地址','商品详情','detailurl'],
+  };
+  function resolveHeader(h, prefer){
+    const k=String(h).trim().toLowerCase();
+    // 优先匹配 prefer 集合内的键，解决「订单数」在每日/商品订单里都出现导致的冲突
+    if(Array.isArray(prefer)){
+      for(const key of prefer){ if(headerAlias[key] && headerAlias[key].includes(k)) return key; }
+    }
+    for(const key in headerAlias){ if(headerAlias[key].includes(k)) return key; }
+    return null;
+  }
+  function parseDaily(rows){
+    if(!rows||rows.length<2) throw new Error('文件为空或缺少数据行');
+    const head=rows[0].map(h=>resolveHeader(h,['date','account','cost','commission','gmv','orders']));
+    const need=['date','account','cost','commission','gmv','orders'];
+    const idx={}; need.forEach(k=>{ idx[k]=head.indexOf(k); });
+    const missing=need.filter(k=>idx[k]<0);
+    if(missing.length) throw new Error('缺少必要列：'+missing.join('、')+'（请参考模板）');
+    const out=[];
+    for(let r=1;r<rows.length;r++){
+      const row=rows[r];
+      const date=normDate(row[idx.date]); const account=String(row[idx.account]||'').trim();
+      if(!date||!account) continue;
+      out.push({
+        date,account,
+        cost:parseNum(row[idx.cost]),
+        commission:parseNum(row[idx.commission]),
+        gmv:parseNum(row[idx.gmv]),
+        orders:Math.max(0,Math.round(parseNum(row[idx.orders]))),
+      });
+    }
+    if(out.length===0) throw new Error('没有解析到有效的投放记录');
+    return out;
+  }
+  function parseOrders(rows){
+    if(!rows||rows.length<2) return [];
+    const head=rows[0].map(h=>resolveHeader(h,['date','account','productName','productId','orderCount','amount','tag']));
+    const need=['date','account','productName','orderCount','amount'];
+    const idx={}; need.forEach(k=>{ idx[k]=head.indexOf(k); });
+    const missing=need.filter(k=>idx[k]<0);
+    if(missing.length) throw new Error('商品订单文件缺少必要列：'+missing.join('、'));
+    const out=[];
+    const tagIdx=head.indexOf('tag'), pidIdx=head.indexOf('productId'), imgIdx=head.indexOf('productImg'), urlIdx=head.indexOf('productUrl');
+    for(let r=1;r<rows.length;r++){
+      const row=rows[r];
+      const date=normDate(row[idx.date]); const account=String(row[idx.account]||'').trim();
+      const name=String(row[idx.productName]||'').trim();
+      if(!date||!account||!name) continue;
+      out.push({
+        date,account,productName:name,
+        productId:pidIdx>=0?String(row[pidIdx]||'').trim():'',
+        orderCount:Math.max(0,Math.round(parseNum(row[idx.orderCount]))),
+        amount:parseNum(row[idx.amount]),
+        tag:tagIdx>=0?String(row[tagIdx]||'').trim():'',
+        productImg:imgIdx>=0?String(row[imgIdx]||'').trim():'',
+        productUrl:urlIdx>=0?String(row[urlIdx]||'').trim():'',
+      });
+    }
+    return out;
+  }
+  function deriveOrders(daily){
+    const accounts=[...new Set(daily.map(d=>d.account))];
+    const dates=[...new Set(daily.map(d=>d.date))].sort();
+    return generateOrderDetails(accounts,dates);
+  }
+
+  /* ============ 导入：弹窗与动作 ============ */
+  const showImport=ref(false);
+  const importTeam=ref('TeamA');
+  const dailyFileName=ref('');
+  const ordersFileName=ref('');
+  const dailyFile=ref(null);
+  const ordersFile=ref(null);
+  const importError=ref('');
+  const toastMsg=ref('');
+  let toastTimer=null;
+  function toast(msg){ toastMsg.value=msg; if(toastTimer) clearTimeout(toastTimer); toastTimer=setTimeout(()=>{toastMsg.value='';},2600); }
+  function openImport(){ importError.value=''; dailyFileName.value=dailyFile.value?dailyFileName.value:''; showImport.value=true; }
+  function closeImport(){ showImport.value=false; }
+  function onDailyFile(e){ const f=e.target.files[0]; dailyFile.value=f; dailyFileName.value=f?f.name:''; importError.value=''; }
+  function onOrdersFile(e){ const f=e.target.files[0]; ordersFile.value=f; ordersFileName.value=f?f.name:''; importError.value=''; }
+  function readFile(file){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(r.result); r.onerror=()=>rej(r.error); r.readAsText(file,'UTF-8'); }); }
+  async function doImport(){
+    importError.value='';
+    if(!dailyFile.value){ importError.value='请先上传「每日投放数据」CSV 文件'; return; }
+    try{
+      const dailyText=await readFile(dailyFile.value);
+      const daily=parseDaily(parseCSV(dailyText));
+      let orders=null;
+      if(ordersFile.value){
+        const orderText=await readFile(ordersFile.value);
+        const parsed=parseOrders(parseCSV(orderText));
+        orders=parsed.length?parsed:deriveOrders(daily);
+      } else {
+        orders=deriveOrders(daily);
+      }
+      importedData.value={...importedData.value,[importTeam.value]:{daily,orders,importedAt:new Date()}};
+      selectedTeam.value=importTeam.value; selectedAccount.value='all';
+      showImport.value=false; dailyFile.value=null; ordersFile.value=null; dailyFileName.value=''; ordersFileName.value='';
+      updateCharts();
+      toast('已导入 '+daily.length+' 条投放记录'+(ordersFile.value?'':'（商品明细已按账号智能生成）'));
+    }catch(e){ importError.value=e.message||'导入失败，请检查文件格式'; }
+  }
+  function resetToMock(){
+    importedData.value={TeamA:null,TeamB:null}; selectedAccount.value='all';
+    showImport.value=false; dailyFile.value=null; ordersFile.value=null; dailyFileName.value=''; ordersFileName.value='';
+    updateCharts(); toast('已恢复为模拟数据');
+  }
+  function downloadTemplate(which){
+    let name,content;
+    if(which==='daily'){
+      name='投放数据模板.csv';
+      content='日期,账号,广告消耗,预估佣金,GMV,订单数\n';
+      content+='2026-07-01,小老妹,3200,980,28600,210\n';
+      content+='2026-07-01,周浩,2100,640,18200,160\n';
+      content+='2026-07-02,小老妹,3500,1020,30100,230\n';
+    } else {
+      name='商品订单模板.csv';
+      content='日期,账号,商品名称,商品ID,订单数,金额,标签,商品图片,商品链接\n';
+      content+='2026-07-01,小老妹,夏季透气运动鞋,SP001,80,5600,爆款,https://img.example.com/SP001.jpg,https://item.example.com/SP001\n';
+      content+='2026-07-01,小老妹,纯棉休闲T恤,SP002,60,2400,爆款,,https://item.example.com/SP002\n';
+    }
+    const blob=new Blob(['\uFEFF'+content],{type:'text/csv;charset=utf-8'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); URL.revokeObjectURL(a.href);
+  }
+
+  const importedCount=computed(()=>{ const imp=importedData.value[selectedTeam.value]; return imp?imp.daily.length:0; });
+  const importedAtText=computed(()=>{ const imp=importedData.value[selectedTeam.value]; return imp?imp.importedAt.toLocaleString('zh-CN'):''; });
+
+  /* ============ 生命周期 ============ */
+  onMounted(()=>{
+    const today=new Date(); const weekAgo=new Date(today); weekAgo.setDate(today.getDate()-7);
+    customEnd.value=today.toISOString().split('T')[0]; customStart.value=weekAgo.toISOString().split('T')[0];
     updateCharts();
+    loading.value=false;
   });
-  watch([selectedAccount, timeMode, customStart, customEnd], () => updateCharts());
-  watch(selectedTeam, () => { selectedAccount.value = 'all'; updateCharts(); });
-  return { selectedTeam, selectedAccount, timeMode, timeDimension, customStart, customEnd, currentDate, timeQuickOptions, timeDimensions, currentAccounts, filteredMetrics, orderDetails, donutLegend, accountComparison, donutChartRef, lineChartRef, formatNumber, tagClass, onTeamChange, selectTimeRange, updateCharts };
-}}).mount('#app');</script>
+  watch([selectedAccount,timeMode,timeDimension,customStart,customEnd],()=>updateCharts());
+  watch(selectedTeam,()=>{ selectedAccount.value='all'; updateCharts(); });
+  watch(()=>importedData.value,()=>{ selectedAccount.value='all'; updateCharts(); },{deep:true});
+
+  return {
+    selectedTeam,selectedAccount,timeMode,timeDimension,customStart,customEnd,currentDate,loading,
+    openPicker,pickerView,pickerDays,openPickerFor,closePicker,movePicker,isSel,selectDate,
+    timeQuickOptions,timeDimensions,currentAccounts,filteredMetrics,orderDetails,donutLegend,accountComparison,kpis,
+    importedCount,importedAtText,donutChartRef,lineChartRef,
+    formatNumber,tagClass,copyId,openProduct,onTeamChange,selectTimeRange,updateCharts,
+    showImport,importTeam,dailyFileName,ordersFileName,importError,toastMsg,
+    openImport,closeImport,onDailyFile,onOrdersFile,doImport,resetToMock,downloadTemplate,
+  };
+}}).mount('#app');
+</script>
 </body>
 </html>
